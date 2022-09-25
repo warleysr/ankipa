@@ -1,0 +1,41 @@
+{
+    "languages": {
+        "English (United States)": "en-US",
+        "English (United Kingdom)": "en-GB",
+        "English (Australia)": "en-AU",
+        "Chinese (Mandarin, Simplified)": "zh-CN",
+        "French (France)": "fr-FR",
+        "German (Germany)": "de-DE",
+        "Spanish (Spain)": "es-ES"
+    },
+    "regions": [
+        "southafricanorth",
+        "eastasia",
+        "southeastasia",
+        "australiaeast",
+        "centralindia",
+        "japaneast",
+        "japanwest",
+        "koreacentral",
+        "canadacentral",
+        "northeurope",
+        "westeurope",
+        "francecentral",
+        "germanywestcentral",
+        "norwayeast",
+        "switzerlandnorth",
+        "switzerlandwest",
+        "uksouth",
+        "uaenorth",
+        "brazilsouth",
+        "centralus",
+        "eastus",
+        "eastus2",
+        "northcentralus",
+        "southcentralus",
+        "westcentralus",
+        "westus",
+        "westus2",
+        "westus3"
+    ]
+}
