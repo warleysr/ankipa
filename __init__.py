@@ -2,7 +2,7 @@ from aqt import mw
 from aqt.utils import showInfo
 from aqt.qt import *
 from aqt.sound import record_audio
-from .tests import pron_assess
+from .pronunciation import pron_assess
 import json
 import re
 import os
@@ -55,9 +55,31 @@ class AnkiPA:
             return
 
         lang = data["languages"][language]
-        results = pron_assess(region, lang, key, cls.REFTEXT, recorded_voice)
+        result = pron_assess(region, lang, key, cls.REFTEXT, recorded_voice)
 
-        showInfo(json.dumps(results))
+        if result["RecognitionStatus"] != "Success":
+            showInfo("There was an error recognizing your speech.")
+            return
+
+        scores = result["NBest"][0]
+        accuracy = scores["AccuracyScore"]
+        fluency = scores["FluencyScore"]
+        pronunciation = scores["PronScore"]
+
+        err_colors = {
+            "None": "green",
+            "Omission": "purple",
+            "Insertion": "cyan",
+            "Mispronunciation": "red",
+        }
+        html = (
+            f"<b>Accuracy: </b> {accuracy}%<br><b>Fluency: </b>{fluency}%<br><b>"
+            f"Pronunciation: </b>{pronunciation}%<br><br>"
+        )
+        for w in scores["Words"]:
+            html += f"<b style='color: {err_colors[w['ErrorType']]}'>{w['Word']}</b> "
+
+        showInfo(html.strip())
 
 
 def settings_dialog():
