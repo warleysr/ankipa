@@ -1,4 +1,6 @@
 from aqt import mw
+from aqt.main import AnkiQt
+from aqt.webview import AnkiWebView
 from aqt.utils import showInfo
 from aqt.qt import *
 from aqt.sound import record_audio
@@ -66,20 +68,51 @@ class AnkiPA:
         fluency = scores["FluencyScore"]
         pronunciation = scores["PronScore"]
 
-        err_colors = {
-            "None": "green",
-            "Omission": "purple",
-            "Insertion": "cyan",
-            "Mispronunciation": "red",
-        }
-        html = (
-            f"<b>Accuracy: </b> {accuracy}%<br><b>Fluency: </b>{fluency}%<br><b>"
-            f"Pronunciation: </b>{pronunciation}%<br><br>"
-        )
-        for w in scores["Words"]:
-            html += f"<b style='color: {err_colors[w['ErrorType']]}'>{w['Word']}</b> "
+        with open(os.path.join(addon, "template.html"), "r") as ft:
+            html_template = ft.read()
 
-        showInfo(html.strip())
+            # Replace percentages in template
+            html = html_template.replace("[ACCURACY]", str(int(accuracy)))
+            html = html.replace("[FLUENCY]", str(int(fluency)))
+            html = html.replace("[PRONUNCIATION]", str(int(pronunciation)))
+
+            # Replace percentages colors in template
+            html = html.replace("[ACCURACY-COLOR]", get_color(accuracy))
+            html = html.replace("[FLUENCY-COLOR]", get_color(fluency))
+            html = html.replace("[PRONUNCIATION-COLOR]", get_color(pronunciation))
+
+        ResultsDialog(mw, html).exec()
+
+
+def get_color(percentage):
+    if percentage < 30:
+        return "red"
+    elif percentage < 50:
+        return "orange"
+    elif percentage < 70:
+        return "#fcd303"
+    else:
+        return "green"
+
+
+class ResultsDialog(QDialog):
+    def __init__(self, mw: AnkiQt, html: str):
+        super().__init__(mw)
+        self.mw = mw
+        self.config = self.mw.addonManager.getConfig(__name__)
+        self.setWindowTitle("AnkiPA Results")
+
+        vbox = QVBoxLayout()
+        self.web = AnkiWebView(self, title="AnkiPA Results")
+        vbox.addWidget(self.web)
+        self.web.set_open_links_externally(False)
+        self.web.setHtml(html)
+        self.web.setZoomFactor(1)
+        self.resize(1024, 720)
+        self.setLayout(vbox)
+
+    def exec(self) -> int:
+        return super().exec()
 
 
 def settings_dialog():
