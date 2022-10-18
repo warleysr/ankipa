@@ -8,146 +8,175 @@
     <style>
       body {
         background-color: white;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
       }
 
-        .single-chart {
+      .single-chart {
         width: 15%;
         justify-content: space-around ;
         float: left;
         padding: 20px;
-        }
+      }
 
-        .circular-chart {
+      .circular-chart {
         display: block;
         margin: 10px auto;
         max-width: 80%;
         max-height: 250px;
-        }
+      }
 
-        .circle-bg {
+      .circle-bg {
         fill: none;
         stroke: #eee;
         stroke-width: 3.8;
-        }
+      }
 
-        .circle {
+      .circle {
         fill: none;
         stroke-width: 2.8;
         stroke-linecap: round;
         animation: progress 1s ease-out forwards;
-        }
+      }
 
-        @keyframes progress {
-        0% {
-            stroke-dasharray: 0 100;
-        }
-        }
+      @keyframes progress {
+      0% {
+          stroke-dasharray: 0 100;
+      }
+      }
 
-        .circular-chart.accuracy .circle {
+      .circular-chart.accuracy .circle {
         stroke: [ACCURACY-COLOR];
-        }
+      }
 
-        .circular-chart.fluency .circle {
+      .circular-chart.fluency .circle {
         stroke: [FLUENCY-COLOR];
-        }
+      }
 
-        .circular-chart.pronunciation .circle {
+      .circular-chart.pronunciation .circle {
         stroke: [PRONUNCIATION-COLOR];
-        }
+      }
 
-        .percentage {
+      .percentage {
         fill: #666;
         font-family: sans-serif;
         font-size: 0.5em;
         text-anchor: middle;
-        }
+      }
 
-        h1 {
-          font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-        }
-
-        h2 {
-          font-family: sans-serif;
+      h2 {
+        font-family: sans-serif;
+        text-align: center;
+        white-space: nowrap;
+      }
+      .tooltip {
+          position:relative;
+          text-align:left;
+          display: inline-block;
           text-align: center;
-          white-space: nowrap;
-          font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-        }
-        .tooltip {
-            position:relative;
-            text-align:left;
-            display: inline-block;
-            text-align: center;
-            white-space: normal;
-        }
+          white-space: normal;
+      }
 
-        .tooltip .bottom {
-            min-width:200px; 
-            top:40px;
-            left:50%;
-            transform:translate(-50%, 0);
-            padding:10px 20px;
-            color:#FFFFFF;
-            background-color:#000000;
-            font-weight:normal;
-            font-size:13px;
-            border-radius:8px;
-            position:absolute;
-            z-index:99999999;
-            box-sizing:border-box;
-            box-shadow:0 1px 8px rgba(0,0,0,0.5);
-            visibility:hidden; opacity:0; transition:opacity 0.8s;
-        }
+      .tooltip .bottom {
+          min-width:200px; 
+          top:40px;
+          left:50%;
+          transform:translate(-50%, 0);
+          padding:10px 20px;
+          color:#FFFFFF;
+          background-color:#000000;
+          font-weight:normal;
+          font-size:13px;
+          border-radius:8px;
+          position:absolute;
+          z-index:99999999;
+          box-sizing:border-box;
+          box-shadow:0 1px 8px rgba(0,0,0,0.5);
+          visibility:hidden; opacity:0; transition:opacity 0.8s;
+      }
 
-        .tooltip:hover .bottom {
-            visibility:visible; opacity:1;
-        }
+      .tooltip:hover .bottom {
+          visibility:visible; opacity:1;
+      }
 
-        .tooltip .bottom i {
-            position:absolute;
-            bottom:100%;
-            left:50%;
-            margin-left:-12px;
-            width:24px;
-            height:12px;
-            overflow:hidden;
-        }
+      .tooltip .bottom i {
+          position:absolute;
+          bottom:100%;
+          left:50%;
+          margin-left:-12px;
+          width:24px;
+          height:12px;
+          overflow:hidden;
+      }
 
-        .tooltip .bottom i::after {
-            content:'';
-            position:absolute;
-            width:12px;
-            height:12px;
-            left:50%;
-            transform:translate(-50%,50%) rotate(45deg);
-            background-color:#000000;
-            box-shadow:0 1px 8px rgba(0,0,0,0.5);
-        }
+      .tooltip .bottom i::after {
+          content:'';
+          position:absolute;
+          width:12px;
+          height:12px;
+          left:50%;
+          transform:translate(-50%,50%) rotate(45deg);
+          background-color:#000000;
+          box-shadow:0 1px 8px rgba(0,0,0,0.5);
+      }
 
-        .words {
-          clear: both;
-          float: left;
-          margin-left: 50px;
-        }
+      .words {
+        clear: both;
+        float: left;
+        margin-left: 50px;
+      }
 
-        .None {
-          color: green;
-        }
+      .None {
+        color: green;
+      }
 
-        .Mispronunciation {
-          color: red;
-        }
+      .Mispronunciation {
+        color: red;
+      }
 
-        .Omission {
-          color: purple;
-        }
+      .Omission {
+        color: purple;
+      }
 
-        .Insertion {
-          color: cyan;
-        }
+      .Insertion {
+        color: darkblue;
+      }
 
-        .word {
-          clear: both;
-        }
+      .square {
+        width: 15px;
+        height: 15px;
+        border: 2px solid black;
+      }
+
+      .MispronunciationBG {
+        background-color: red;
+      }
+
+      .OmissionBG {
+        background-color: purple;
+      }
+
+      .InsertionBG {
+        background-color: darkblue;
+      }
+
+      .word {
+        clear: both;
+      }
+
+      .errors {
+        clear: both;
+        margin-left: 50px;
+      }
+
+      .error-info {
+        float: left;
+        padding: 10px;
+      }
+
+      .error-count {
+        display: flex;
+        vertical-align: middle;
+      }
 
 
     </style>
@@ -235,8 +264,23 @@
         </h2>
       </div>
     </div>
-    <!-- Word by word -->
     <br><br>
+    <!-- Errors count -->
+    <div class="errors">
+      <div class="error-info">
+        <span class="error-count"><div class="square MispronunciationBG"></div>&nbsp;Mispronunciations: [MISPRONUNCIATIONS]</span>
+      </div>
+      
+      <div class="error-info">
+        <span class="error-count"><div class="square OmissionBG"></div>&nbsp;Omissions: [OMISSIONS]</span>
+      </div>
+      
+      <div class="error-info">
+        <span class="error-count"><div class="square InsertionBG"></div>&nbsp;Insertions: [INSERTIONS]</span>
+      </div>
+      
+    </div>
+    <!-- Word by word info -->
     <div class="words">
       [WORDLIST]
     </div>

@@ -16,13 +16,13 @@ REMOVE_HTML_RE = re.compile("<[^<]+?>")
 REMOVE_TAG_RE = re.compile("\[[^\]]+\]")
 WORD_HTML = """
 <h2 class="word tooltip [ERROR]">
-    [WORD]
-    <div class="bottom" style="min-width: 100px;">
-        <p>[WORD]</p>
-        <i></i>
-    </div>
-    </h2>
+[WORD]
+<div class="bottom" style="min-width: 100px;">
+    <p style="font-weight: bold;">[ERROR-INFO]</p>
+    <p>[WORD]</p>
+    <i></i>
 </div>
+</h2>
 """
 
 
@@ -91,13 +91,26 @@ class AnkiPA:
             html = html.replace("[FLUENCY-COLOR]", get_color(fluency))
             html = html.replace("[PRONUNCIATION-COLOR]", get_color(pronunciation))
 
+        errors = {"Mispronunciation": 0, "Omission": 0, "Insertion": 0}
+
         words_html = ""
         for word in scores["Words"]:
-            words_html += WORD_HTML.replace("[WORD]", word["Word"]).replace(
-                "[ERROR]", word["ErrorType"]
+            err = word["ErrorType"]
+            words_html += (
+                WORD_HTML.replace("[WORD]", word["Word"])
+                .replace("[ERROR]", err)
+                .replace("[ERROR-INFO]", err if err != "None" else "Correct")
             )
+            if err != "None":
+                errors[err] += 1
 
+        # Replace wordlist
         html = html.replace("[WORDLIST]", words_html)
+
+        # Replace errors count
+        html = html.replace("[MISPRONUNCIATIONS]", str(errors["Mispronunciation"]))
+        html = html.replace("[OMISSIONS]", str(errors["Omission"]))
+        html = html.replace("[INSERTIONS]", str(errors["Insertion"]))
 
         ResultsDialog(mw, html).exec()
 
