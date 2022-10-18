@@ -14,6 +14,16 @@ SETTINGS_ORGANIZATION = "github_warleysr"
 SETTINGS_APPLICATION = "ankipa"
 REMOVE_HTML_RE = re.compile("<[^<]+?>")
 REMOVE_TAG_RE = re.compile("\[[^\]]+\]")
+WORD_HTML = """
+<h2 class="word tooltip [ERROR]">
+    [WORD]
+    <div class="bottom" style="min-width: 100px;">
+        <p>[WORD]</p>
+        <i></i>
+    </div>
+    </h2>
+</div>
+"""
 
 
 app_settings = QSettings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION)
@@ -80,6 +90,14 @@ class AnkiPA:
             html = html.replace("[ACCURACY-COLOR]", get_color(accuracy))
             html = html.replace("[FLUENCY-COLOR]", get_color(fluency))
             html = html.replace("[PRONUNCIATION-COLOR]", get_color(pronunciation))
+
+        words_html = ""
+        for word in scores["Words"]:
+            words_html += WORD_HTML.replace("[WORD]", word["Word"]).replace(
+                "[ERROR]", word["ErrorType"]
+            )
+
+        html = html.replace("[WORDLIST]", words_html)
 
         ResultsDialog(mw, html).exec()
 
