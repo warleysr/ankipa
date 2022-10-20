@@ -44,9 +44,13 @@ class AnkiPA:
             settings_dialog()
             return
 
-        to_read = mw.reviewer.card.note()["Frente"]
+        idx = app_settings.value("field-index", defaultValue=0)
+        field = mw.col.models.fieldNames(mw.reviewer.card.note().model())[idx]
+        to_read = mw.reviewer.card.note()[field]
+
         # Remove html tags
         to_read = re.sub(REMOVE_HTML_RE, " ", to_read).replace("&nbsp;", "")
+
         # Remove addons tags
         to_read = re.sub(REMOVE_TAG_RE, "", to_read).strip()
 
@@ -136,9 +140,7 @@ class ResultsDialog(QDialog):
         vbox = QVBoxLayout()
         self.web = AnkiWebView(self, title="AnkiPA Results")
         vbox.addWidget(self.web)
-        self.web.set_open_links_externally(False)
         self.web.setHtml(html)
-        self.web.setZoomFactor(1)
         self.resize(1024, 720)
         self.setLayout(vbox)
 
@@ -198,6 +200,12 @@ class SettingsDialog(QDialog):
         if curr_lang is not None:
             self.lang_combo.setCurrentIndex(langs.index(curr_lang))
 
+        # Field index option
+        self.fidx_label = QLabel("Field index:")
+        self.fidx_spin = QSpinBox()
+        self.fidx_spin.setValue(self.my_settings.value("field-index", defaultValue=0))
+
+        # Add elements to base layout
         self.base_layout.addWidget(self.api_label)
         self.base_layout.addWidget(self.key_label)
         self.base_layout.addWidget(self.key_field)
@@ -205,13 +213,17 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.region_combo)
         self.base_layout.addWidget(self.lang_label)
         self.base_layout.addWidget(self.lang_combo)
+        self.base_layout.addWidget(self.fidx_label)
+        self.base_layout.addWidget(self.fidx_spin)
         self.base_layout.addWidget(self.buttonBox)
+
         self.setLayout(self.base_layout)
 
     def accept(self):
         self.my_settings.setValue("key", self.key_field.text())
         self.my_settings.setValue("region", self.region_combo.currentText())
         self.my_settings.setValue("language", self.lang_combo.currentText())
+        self.my_settings.setValue("field-index", self.fidx_spin.value())
         super(SettingsDialog, self).accept()
 
     def reject(self):

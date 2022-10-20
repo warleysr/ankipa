@@ -1,4 +1,6 @@
 # AnkiPA
+<img src="https://i.imgur.com/yi7tN9j.png" width="250px" align="right">
+
 This project is an Anki addon for pronunciation assessment. You can record your own voice when studying a flashcard and get an overview of what your pronunciation looks like!
 
 ## How it works
@@ -15,6 +17,8 @@ To use this addon you will need an Azure API key. You can create an free account
 
 With that informations you need to open your Anki and go to **Tools** and then **AnkiPA Settings**. A window will appear and there you place your key and select the region and also choose the language that you will be evaluating your pronunciation.
 
+<img src="https://i.imgur.com/DAE57WI.png" width="250px">
+
 ## Supported languages
 Azure Pronunciation Assessment supports 5 languages with 3 different accents for English. They are:
 - English (United States)
@@ -24,3 +28,9 @@ Azure Pronunciation Assessment supports 5 languages with 3 different accents for
 - French (France)
 - German (Germany)
 - Spanish (Spain)
+
+## Results
+
+After clicking on `Save` button, in few seconds a popup screen will appear showing details about your pornunciation. It shows the accuracy, fluency and overall pronunciation percentage scores, the amount of errors you committed and what words your pronounced correctly. When you hover your mouse in the words you can see details about the phonemes.
+
+<img src="https://i.imgur.com/EFCk9Vs.png">
