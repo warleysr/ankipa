@@ -5,11 +5,15 @@ This project is an Anki addon for pronunciation assessment. You can record your 
 
 ## How it works
 
-When you are reviewing a flashcard and press `Ctrl + W` AnkiPA starts to record your voice and then send the data to Azure Speech Services to get an pronunciation assessment based on their 
+When you are reviewing a flashcard and press `Ctrl + W` AnkiPA starts to record your voice and then send the data to Azure Speech Services to get an pronunciation assessment based on their service.
 
 ## Installation
 
-You need to clone this repository to  your Anki addons folder. ...
+You need to clone this repository to your Anki addons folder. 
+
+Go to Anki -> Tools -> Addons. Select one and click View files.
+
+(AnkiWeb code will be provided soon)
 
 ## Configuring your API key
 
@@ -31,6 +35,6 @@ Azure Pronunciation Assessment supports 5 languages with 3 different accents for
 
 ## Results
 
-After clicking on `Save` button, in few seconds a popup screen will appear showing details about your pornunciation. It shows the accuracy, fluency and overall pronunciation percentage scores, the amount of errors you committed and what words your pronounced correctly. When you hover your mouse in the words you can see details about the phonemes.
+After clicking on `Save` button, in few seconds a popup screen will appear showing details about your pornunciation. It shows the percentage scores for accuracy, fluency and overall pronunciation , the amount of errors you committed and what words your pronounced correctly. When you hover your mouse in the words you can see details about the phonemes. The result screen looks like this:
 
 <img src="https://i.imgur.com/EFCk9Vs.png">
