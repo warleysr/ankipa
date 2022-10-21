@@ -9,11 +9,12 @@ When you are reviewing a flashcard and press `Ctrl + W` AnkiPA starts to record 
 
 ## Installation
 
-You need to clone this repository to your Anki addons folder. 
+Open Anki and go to **Tools** -> **Add-ons** -> **Get Add-ons...** -> Place the code below and then click OK.
 
-Go to Anki -> Tools -> Addons. Select one and click View files.
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`86363097`
 
-(AnkiWeb code will be provided soon)
+See more details at <a href="https://ankiweb.net/shared/info/86363097">AnkiWeb page</a>. You can also clone this repository to your Anki addons folder if you prefer. 
+
 
 ## Configuring your API key
 
