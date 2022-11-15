@@ -24,6 +24,13 @@ With that informations you need to open your Anki and go to **Tools** and then *
 
 <img src="https://i.imgur.com/DAE57WI.png" width="250px">
 
+## Testing key
+If you're just taking a look and don't want to have the work of creating your own key, try using this:
+
+**Key**: `55e82f46c625437c94fee3d3eea655b8`
+
+**Region**: `centralus`
+
 ## Supported languages
 Azure Pronunciation Assessment supports 5 languages with 3 different accents for English. They are:
 - English (United States)
