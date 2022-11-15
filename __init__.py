@@ -3,7 +3,7 @@ from aqt.main import AnkiQt
 from aqt.webview import AnkiWebView
 from aqt.utils import showInfo
 from aqt.qt import *
-from aqt.sound import record_audio
+from aqt.sound import record_audio, play
 from .pronunciation import pron_assess
 import json
 import re
@@ -37,6 +37,7 @@ with open(os.path.join(addon, "azure_data.json"), "r") as fp:
 class AnkiPA:
 
     REFTEXT = None
+    RECORDED = None
 
     @classmethod
     def test_pronunciation(cls):
@@ -62,6 +63,8 @@ class AnkiPA:
     def after_record(cls, recorded_voice):
         if not recorded_voice:
             return
+
+        cls.RECORDED = recorded_voice
 
         region = app_settings.value("region")
         language = app_settings.value("language")
@@ -119,6 +122,10 @@ class AnkiPA:
         ResultsDialog(mw, html).exec()
 
 
+def replay_voice():
+    play(AnkiPA.RECORDED)
+
+
 def get_color(percentage):
     if percentage < 30:
         return "red"
@@ -139,9 +146,26 @@ class ResultsDialog(QDialog):
 
         vbox = QVBoxLayout()
         self.web = AnkiWebView(self, title="AnkiPA Results")
+
+        container = QWidget(self)
+        container.setFixedSize(250, 35)
+        container.move(5, 5)
+        self.buttons = QHBoxLayout(container)
+
+        self.replay_btn = QPushButton("Replay your voice")
+        self.replay_btn.clicked.connect(replay_voice)
+
+        self.play_tts_btn = QPushButton("Play TTS")
+
+        self.buttons.addWidget(self.replay_btn)
+        self.buttons.addWidget(self.play_tts_btn)
+
+        vbox.addLayout(self.buttons)
         vbox.addWidget(self.web)
+
         self.web.setHtml(html)
         self.resize(1024, 720)
+
         self.setLayout(vbox)
 
     def exec(self) -> int:
