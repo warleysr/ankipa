@@ -5,6 +5,7 @@ from aqt.utils import showInfo
 from aqt.qt import *
 from aqt.sound import record_audio, play
 from .pronunciation import pron_assess
+from .tts import TTS
 import json
 import re
 import os
@@ -38,6 +39,8 @@ class AnkiPA:
 
     REFTEXT = None
     RECORDED = None
+    TTS_GEN = None
+    TEMP = None
 
     @classmethod
     def test_pronunciation(cls):
@@ -73,7 +76,8 @@ class AnkiPA:
             showInfo("Please configure your Azure service properly.")
             return
 
-        lang = data["languages"][language]
+        # Perform pronunciation assessment
+        lang = data["languages"][language][0]
         result = pron_assess(region, lang, key, cls.REFTEXT, recorded_voice)
 
         if result["RecognitionStatus"] != "Success":
@@ -126,6 +130,23 @@ def replay_voice():
     play(AnkiPA.RECORDED)
 
 
+def replay_tts():
+    if AnkiPA.TTS_GEN is None:
+        region = app_settings.value("region")
+        language = app_settings.value("language")
+        key = app_settings.value("key")
+        voice = data["languages"][language][1]
+
+        generated = TTS.gen_tts_audio(region, key, voice, AnkiPA.REFTEXT)
+        if generated is None:
+            showInfo("There was an error generating the TTS audio.")
+            return
+
+        AnkiPA.TTS_GEN = generated
+
+    play(AnkiPA.TTS_GEN)
+
+
 def get_color(percentage):
     if percentage < 30:
         return "red"
@@ -156,6 +177,7 @@ class ResultsDialog(QDialog):
         self.replay_btn.clicked.connect(replay_voice)
 
         self.play_tts_btn = QPushButton("Play TTS")
+        self.play_tts_btn.clicked.connect(replay_tts)
 
         self.buttons.addWidget(self.replay_btn)
         self.buttons.addWidget(self.play_tts_btn)
@@ -170,6 +192,12 @@ class ResultsDialog(QDialog):
 
     def exec(self) -> int:
         return super().exec()
+
+    def closeEvent(self, a0) -> None:
+        if AnkiPA.TTS_GEN is not None:
+            # os.remove(AnkiPA.TTS_GEN)
+            AnkiPA.TTS_GEN = None
+        return super().closeEvent(a0)
 
 
 def settings_dialog():

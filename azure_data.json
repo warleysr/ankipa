@@ -1,12 +1,16 @@
 {
     "languages": {
-        "English (United States)": "en-US",
-        "English (United Kingdom)": "en-GB",
-        "English (Australia)": "en-AU",
-        "Chinese (Mandarin, Simplified)": "zh-CN",
-        "French (France)": "fr-FR",
-        "German (Germany)": "de-DE",
-        "Spanish (Spain)": "es-ES"
+        "English (United States)": ["en-US", "en-US-GuyNeural"],
+        "English (United Kingdom)": ["en-GB", "en-GB-AlfieNeural"],
+        "English (Australia)": ["en-AU", "en-AU-DarrenNeural"],
+        "English (India)": ["en-IN", "en-IN-PrabhatNeural"],
+        "Chinese (Mandarin, Simplified)": ["zh-CN", "zh-CN-YunfengNeural"],
+        "French (France)": ["fr-FR", "fr-FR-AlainNeural"],
+        "French (Canada)": ["fr-CA", "fr-CA-AntoineNeural"],
+        "German (Germany)": ["de-DE", "de-DE-BerndNeural"],
+        "Spanish (Spain)": ["es-ES", "es-ES-AlvaroNeural"],
+        "Arabic (Saudi Arabia)": ["ar-SA", "ar-SA-HamedNeural"],
+        "Vietnamese (Vietnam)": ["vi-VN", "vi-VN-NamMinhNeural"]
     },
     "regions": [
         "southafricanorth",

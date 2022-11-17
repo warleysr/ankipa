@@ -32,14 +32,18 @@ If you're just taking a look and don't want to have the work of creating your ow
 **Region**: `centralus`
 
 ## Supported languages
-Azure Pronunciation Assessment supports 5 languages with 3 different accents for English. They are:
+Azure Pronunciation Assessment supports 7 languages with 4 different accents for English and 2 for French. They are:
 - English (United States)
 - English (United Kingdom)
 - English (Australia)
+- English (India)
 - Chinese (Mandarin, Simplified)
 - French (France)
+- French (Canada)
 - German (Germany)
 - Spanish (Spain)
+- Arabic (Saudi Arabia)
+- Vietnamese (Vietnam)
 
 ## Results
 
