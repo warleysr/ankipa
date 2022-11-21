@@ -1,5 +1,6 @@
 import requests
 import tempfile
+import os
 
 
 class TTS:
@@ -24,7 +25,11 @@ class TTS:
         if req.status_code != 200:
             return None
 
-        _, name = tempfile.mkstemp(suffix=".mp3")
+        tmpdir = tempfile.gettempdir() + os.sep + "ankipa"
+        os.makedirs(tmpdir, exist_ok=True)
+
+        _, name = tempfile.mkstemp(suffix=".mp3", dir=tmpdir)
+
         with open(name, "wb") as fp:
             fp.write(bytearray(req.content))
 

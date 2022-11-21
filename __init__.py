@@ -6,6 +6,8 @@ from aqt.qt import *
 from aqt.sound import record_audio, play
 from .pronunciation import pron_assess
 from .tts import TTS
+import tempfile
+import shutil
 import json
 import re
 import os
@@ -34,13 +36,16 @@ addon = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(addon, "azure_data.json"), "r") as fp:
     data = json.load(fp)
 
+# Remove temporary files
+shutil.rmtree(tempfile.gettempdir() + os.sep + "ankipa", ignore_errors=True)
+
 
 class AnkiPA:
 
     REFTEXT = None
     RECORDED = None
     TTS_GEN = None
-    TEMP = None
+    LAST_TTS = None
 
     @classmethod
     def test_pronunciation(cls):
@@ -60,6 +65,12 @@ class AnkiPA:
 
         cls.REFTEXT = to_read
 
+        cid = mw.reviewer.card.id
+        if cls.LAST_TTS != cid:
+            AnkiPA.TTS_GEN = None
+            cls.LAST_TTS = cid
+
+        # Record user voice
         record_audio(mw, mw, False, cls.after_record)
 
     @classmethod
@@ -194,9 +205,6 @@ class ResultsDialog(QDialog):
         return super().exec()
 
     def closeEvent(self, a0) -> None:
-        if AnkiPA.TTS_GEN is not None:
-            # os.remove(AnkiPA.TTS_GEN)
-            AnkiPA.TTS_GEN = None
         return super().closeEvent(a0)
 
 
