@@ -134,7 +134,7 @@ class AnkiPA:
         html = html.replace("[OMISSIONS]", str(errors["Omission"]))
         html = html.replace("[INSERTIONS]", str(errors["Insertion"]))
 
-        ResultsDialog(mw, html).exec()
+        ResultsDialog(mw, html, pronunciation).exec()
 
 
 def replay_voice():
@@ -169,8 +169,20 @@ def get_color(percentage):
         return "green"
 
 
+def get_sound(percentage):
+    sound = "high.mp3"
+    if percentage < 30:
+        sound = "low.mp3"
+    elif percentage < 50:
+        sound = "medium-low.mp3"
+    elif percentage < 70:
+        sound = "medium-high.mp3"
+
+    return os.path.join(addon, "sounds" + os.sep + sound)
+
+
 class ResultsDialog(QDialog):
-    def __init__(self, mw: AnkiQt, html: str):
+    def __init__(self, mw: AnkiQt, html: str, pronunciation_score: float):
         super().__init__(mw)
         self.mw = mw
         self.config = self.mw.addonManager.getConfig(__name__)
@@ -200,6 +212,9 @@ class ResultsDialog(QDialog):
         self.resize(1024, 720)
 
         self.setLayout(vbox)
+
+        if app_settings.value("sound-effects", "false") == "true":
+            play(get_sound(pronunciation_score))
 
     def exec(self) -> int:
         return super().exec()
@@ -265,6 +280,14 @@ class SettingsDialog(QDialog):
         self.fidx_spin = QSpinBox()
         self.fidx_spin.setValue(self.my_settings.value("field-index", defaultValue=0))
 
+        # Sound effects
+        self.sound_effects_check = QCheckBox("Enable sound effects on results")
+        self.sound_effects_check.setChecked(
+            True
+            if self.my_settings.value("sound-effects", "false") == "true"
+            else False
+        )
+
         # Add elements to base layout
         self.base_layout.addWidget(self.api_label)
         self.base_layout.addWidget(self.key_label)
@@ -275,6 +298,7 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.lang_combo)
         self.base_layout.addWidget(self.fidx_label)
         self.base_layout.addWidget(self.fidx_spin)
+        self.base_layout.addWidget(self.sound_effects_check)
         self.base_layout.addWidget(self.buttonBox)
 
         self.setLayout(self.base_layout)
@@ -284,6 +308,7 @@ class SettingsDialog(QDialog):
         self.my_settings.setValue("region", self.region_combo.currentText())
         self.my_settings.setValue("language", self.lang_combo.currentText())
         self.my_settings.setValue("field-index", self.fidx_spin.value())
+        self.my_settings.setValue("sound-effects", self.sound_effects_check.isChecked())
         super(SettingsDialog, self).accept()
 
     def reject(self):
