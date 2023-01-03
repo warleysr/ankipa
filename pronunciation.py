@@ -2,7 +2,7 @@ import requests
 import base64
 
 
-def pron_assess(region, lang, key, reftext, recorded_voice):
+def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system):
     # a generator which reads audio data chunk by chunk
     # the audio_source can be any audio input stream which provides read() method, e.g. audio file, microphone, memory stream, etc.
     def get_chunk(audio_source, chunk_size=1024):
@@ -17,7 +17,8 @@ def pron_assess(region, lang, key, reftext, recorded_voice):
     pronAssessmentParamsJson = (
         '{"ReferenceText":"%s","GradingSystem":"HundredMark","Granularity": "Phoneme",'
         % referenceText
-        + '"PhonemeAlphabet": "IPA", "Dimension":"Comprehensive","EnableMiscue":"True"}'
+        + '"PhonemeAlphabet": "%s", "Dimension":"Comprehensive","EnableMiscue":"True"}'
+        % phoneme_system
     )
     pronAssessmentParamsBase64 = base64.b64encode(
         bytes(pronAssessmentParamsJson, "utf-8")

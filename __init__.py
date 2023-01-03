@@ -22,7 +22,8 @@ WORD_HTML = """
 [WORD]
 <div class="bottom" style="min-width: 100px;">
     <p style="font-weight: bold;">[ERROR-INFO]</p>
-    <p>[WORD]</p>
+    <u>[WORD]</u>
+    <p>[SYLLABLES]</p>
     <i></i>
 </div>
 </h2>
@@ -89,7 +90,10 @@ class AnkiPA:
 
         # Perform pronunciation assessment
         lang = data["languages"][language][0]
-        result = pron_assess(region, lang, key, cls.REFTEXT, recorded_voice)
+        phoneme_system = app_settings.value("phoneme-system", defaultValue="IPA")
+        result = pron_assess(
+            region, lang, key, cls.REFTEXT, recorded_voice, phoneme_system
+        )
 
         if result["RecognitionStatus"] != "Success":
             showInfo("There was an error recognizing your speech.")
@@ -117,14 +121,27 @@ class AnkiPA:
 
         words_html = ""
         for word in scores["Words"]:
-            err = word["ErrorType"]
+            error = word["ErrorType"]
+            syllables = ""
+            if error == "None":
+                syllable_count = len(word["Syllables"])
+                for i, syllable in enumerate(word["Syllables"]):
+                    syllable_score = syllable["AccuracyScore"]
+                    add = " &#x2022; " if i < (syllable_count - 1) else ""
+                    syllables += (
+                        f"<span style='color: {get_color(syllable_score)};'>"
+                        + f"{syllable['Syllable']}</span>"
+                        + f"<span style='color: white;'>{add}</span>"
+                    )
+
             words_html += (
                 WORD_HTML.replace("[WORD]", word["Word"])
-                .replace("[ERROR]", err)
-                .replace("[ERROR-INFO]", err if err != "None" else "Correct")
+                .replace("[SYLLABLES]", syllables)
+                .replace("[ERROR]", error)
+                .replace("[ERROR-INFO]", error if error != "None" else "Correct")
             )
-            if err != "None":
-                errors[err] += 1
+            if error != "None":
+                errors[error] += 1
 
         # Replace wordlist
         html = html.replace("[WORDLIST]", words_html)
@@ -280,6 +297,16 @@ class SettingsDialog(QDialog):
         self.fidx_spin = QSpinBox()
         self.fidx_spin.setValue(self.my_settings.value("field-index", defaultValue=0))
 
+        # Phoneme system for en-us
+        phonemes = ["IPA", "SAPI"]
+
+        self.phoneme_label = QLabel("Phoneme system (only for en-US/GB):")
+        self.phoneme_combo = QComboBox()
+        self.phoneme_combo.addItems(phonemes)
+
+        curr_phoneme = self.my_settings.value("phoneme-system", defaultValue="IPA")
+        self.phoneme_combo.setCurrentIndex(phonemes.index(curr_phoneme))
+
         # Sound effects
         self.sound_effects_check = QCheckBox("Enable sound effects on results")
         self.sound_effects_check.setChecked(
@@ -298,6 +325,8 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.lang_combo)
         self.base_layout.addWidget(self.fidx_label)
         self.base_layout.addWidget(self.fidx_spin)
+        self.base_layout.addWidget(self.phoneme_label)
+        self.base_layout.addWidget(self.phoneme_combo)
         self.base_layout.addWidget(self.sound_effects_check)
         self.base_layout.addWidget(self.buttonBox)
 
@@ -307,6 +336,7 @@ class SettingsDialog(QDialog):
         self.my_settings.setValue("key", self.key_field.text())
         self.my_settings.setValue("region", self.region_combo.currentText())
         self.my_settings.setValue("language", self.lang_combo.currentText())
+        self.my_settings.setValue("phoneme-system", self.phoneme_combo.currentText())
         self.my_settings.setValue("field-index", self.fidx_spin.value())
         self.my_settings.setValue("sound-effects", self.sound_effects_check.isChecked())
         super(SettingsDialog, self).accept()
