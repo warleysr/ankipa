@@ -121,9 +121,8 @@ class AnkiPA:
 
         words_html = ""
         for word in scores["Words"]:
-            error = word["ErrorType"]
             syllables = ""
-            if error == "None":
+            if "Syllables" in word:
                 syllable_count = len(word["Syllables"])
                 for i, syllable in enumerate(word["Syllables"]):
                     syllable_score = syllable["AccuracyScore"]
@@ -134,6 +133,7 @@ class AnkiPA:
                         + f"<span style='color: white;'>{add}</span>"
                     )
 
+            error = word["ErrorType"]
             words_html += (
                 WORD_HTML.replace("[WORD]", word["Word"])
                 .replace("[SYLLABLES]", syllables)
