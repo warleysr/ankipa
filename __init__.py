@@ -151,7 +151,9 @@ class AnkiPA:
         html = html.replace("[OMISSIONS]", str(errors["Omission"]))
         html = html.replace("[INSERTIONS]", str(errors["Insertion"]))
 
-        ResultsDialog(mw, html, pronunciation).exec()
+        widget = ResultsDialog(html, pronunciation)
+        widget.setWindowModality(False)
+        widget.show()
 
 
 def replay_voice():
@@ -199,10 +201,8 @@ def get_sound(percentage):
 
 
 class ResultsDialog(QDialog):
-    def __init__(self, mw: AnkiQt, html: str, pronunciation_score: float):
+    def __init__(self, html: str, pronunciation_score: float):
         super().__init__(mw)
-        self.mw = mw
-        self.config = self.mw.addonManager.getConfig(__name__)
         self.setWindowTitle("AnkiPA Results")
 
         vbox = QVBoxLayout()
@@ -232,9 +232,6 @@ class ResultsDialog(QDialog):
 
         if app_settings.value("sound-effects", "false") == "true":
             play(get_sound(pronunciation_score))
-
-    def exec(self) -> int:
-        return super().exec()
 
     def closeEvent(self, a0) -> None:
         return super().closeEvent(a0)
