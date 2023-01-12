@@ -1,10 +1,9 @@
 import requests
 import base64
+from ankipa import AnkiPA
 
 
-def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system):
-    # a generator which reads audio data chunk by chunk
-    # the audio_source can be any audio input stream which provides read() method, e.g. audio file, microphone, memory stream, etc.
+def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system, timeout):
     def get_chunk(audio_source, chunk_size=1024):
         while True:
             chunk = audio_source.read(chunk_size)
@@ -12,7 +11,6 @@ def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system):
                 break
             yield chunk
 
-    # build pronunciation assessment parameters
     referenceText = reftext
     pronAssessmentParamsJson = (
         '{"ReferenceText":"%s","GradingSystem":"HundredMark","Granularity": "Phoneme",'
@@ -25,7 +23,6 @@ def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system):
     )
     pronAssessmentParams = str(pronAssessmentParamsBase64, "utf-8")
 
-    # build request
     url = (
         "https://%s.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=%s"
         % (region, lang)
@@ -41,7 +38,9 @@ def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system):
     }
 
     audioFile = open(recorded_voice, "rb")
-    response = requests.post(url=url, data=get_chunk(audioFile), headers=headers)
+    response = requests.post(
+        url=url, data=get_chunk(audioFile), headers=headers, timeout=timeout
+    )
     audioFile.close()
 
-    return response.json()
+    AnkiPA.RESULT = response.json()
