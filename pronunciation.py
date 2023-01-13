@@ -1,6 +1,6 @@
 import requests
 import base64
-from ankipa import AnkiPA
+from .ankipa import AnkiPA
 
 
 def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system, timeout):

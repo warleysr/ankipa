@@ -34,7 +34,7 @@ class AnkiPA:
             settings_dialog()
             return
 
-        idx = app_settings.value("field-index", defaultValue=0)
+        idx = int(app_settings.value("field-index", defaultValue=0))
         field = mw.col.models.fieldNames(mw.reviewer.card.note().model())[idx]
         to_read = mw.reviewer.card.note()[field]
 
@@ -81,7 +81,7 @@ class AnkiPA:
         # Perform pronunciation assessment
         lang = data["languages"][language][0]
         phoneme_system = app_settings.value("phoneme-system", defaultValue="IPA")
-        timeout = app_settings.value("timeout", defaultValue=5)
+        timeout = int(app_settings.value("timeout", defaultValue=5))
 
         t = threading.Thread(
             target=pron_assess,

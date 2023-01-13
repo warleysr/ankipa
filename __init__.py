@@ -15,6 +15,7 @@ SETTINGS_ORGANIZATION = "github_warleysr"
 SETTINGS_APPLICATION = "ankipa"
 
 app_settings = QSettings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION)
+cp_action = QAction("Test Your Pronunciation", mw)
 
 # Load Azure API data
 addon = os.path.dirname(os.path.abspath(__file__))
@@ -82,12 +83,12 @@ class ResultsDialog(QDialog):
         self.web = AnkiWebView(self)
 
         container = QWidget(self)
-        container.setFixedSize(270, 40)
+        container.setFixedSize(280, 40)
         container.move(5, 5)
         self.buttons = QHBoxLayout(container)
 
         self.replay_btn = QPushButton("Replay your voice")
-        self.replay_btn.setFixedSize(140, 20)
+        self.replay_btn.setFixedSize(150, 20)
         self.replay_btn.clicked.connect(replay_voice)
 
         self.play_tts_btn = QPushButton("Play TTS")
@@ -105,7 +106,7 @@ class ResultsDialog(QDialog):
 
         self.setLayout(vbox)
 
-        if app_settings.value("sound-effects", "false") == "true":
+        if app_settings.value("sound-effects", "False") == "True":
             play(get_sound(pronunciation_score))
 
     def closeEvent(self, a0) -> None:
@@ -117,10 +118,9 @@ class SettingsDialog(QDialog):
     _FONT_HEADER.setPointSize(12)
     _FONT_HEADER.setBold(True)
 
-    def __init__(self, my_settings: QSettings, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
         self.setWindowTitle("AnkiPA Settings")
-        self.my_settings = my_settings
 
         self.base_layout = QVBoxLayout()
 
@@ -137,7 +137,7 @@ class SettingsDialog(QDialog):
         self.key_label = QLabel("Azure API key:")
         self.key_field = QLineEdit()
 
-        curr_key = self.my_settings.value("key")
+        curr_key = app_settings.value("key")
         if curr_key is not None:
             self.key_field.setText(curr_key)
 
@@ -146,7 +146,7 @@ class SettingsDialog(QDialog):
         self.region_combo = QComboBox()
         self.region_combo.addItems(data["regions"])
 
-        curr_region = self.my_settings.value("region")
+        curr_region = app_settings.value("region")
         if curr_region is not None:
             self.region_combo.setCurrentIndex(data["regions"].index(curr_region))
 
@@ -156,19 +156,21 @@ class SettingsDialog(QDialog):
         langs = list(data["languages"].keys())
         self.lang_combo.addItems(langs)
 
-        curr_lang = self.my_settings.value("language")
+        curr_lang = app_settings.value("language")
         if curr_lang is not None:
             self.lang_combo.setCurrentIndex(langs.index(curr_lang))
 
         # Field index option
         self.fidx_label = QLabel("Field index:")
         self.fidx_spin = QSpinBox()
-        self.fidx_spin.setValue(self.my_settings.value("field-index", defaultValue=0))
+        idx = int(app_settings.value("field-index", defaultValue=0))
+        self.fidx_spin.setValue(idx)
 
         # Timeout
         self.timeout_label = QLabel("Timeout:")
         self.timeout_spin = QSpinBox()
-        self.timeout_spin.setValue(self.my_settings.value("timeout", defaultValue=5))
+        timeout = int(app_settings.value("timeout", defaultValue=5))
+        self.timeout_spin.setValue(timeout)
 
         # Phoneme system for en-us
         phonemes = ["IPA", "SAPI"]
@@ -177,15 +179,27 @@ class SettingsDialog(QDialog):
         self.phoneme_combo = QComboBox()
         self.phoneme_combo.addItems(phonemes)
 
-        curr_phoneme = self.my_settings.value("phoneme-system", defaultValue="IPA")
+        curr_phoneme = app_settings.value("phoneme-system", defaultValue="IPA")
         self.phoneme_combo.setCurrentIndex(phonemes.index(curr_phoneme))
+
+        # Shortcut
+        self.shortcut_label = QLabel("Shortcut:")
+        self.shortcut_box = QHBoxLayout()
+        self.shortcut_label_2 = QLabel("Ctrl + ")
+        self.shortcut_box.addStretch()
+        self.shortcut_field = QLineEdit()
+        self.shortcut_field.setFixedWidth(50)
+        self.shortcut_box.addWidget(self.shortcut_label_2)
+        self.shortcut_box.addWidget(self.shortcut_field)
+        self.shortcut_box.addStretch()
+
+        curr_shortcut = app_settings.value("shortcut", defaultValue="W")
+        self.shortcut_field.setText(curr_shortcut)
 
         # Sound effects
         self.sound_effects_check = QCheckBox("Enable sound effects on results")
         self.sound_effects_check.setChecked(
-            True
-            if self.my_settings.value("sound-effects", "false") == "true"
-            else False
+            True if app_settings.value("sound-effects", "False") == "True" else False
         )
 
         # Add elements to base layout
@@ -202,19 +216,29 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.timeout_spin)
         self.base_layout.addWidget(self.phoneme_label)
         self.base_layout.addWidget(self.phoneme_combo)
+        self.base_layout.addWidget(self.shortcut_label)
+        self.base_layout.addLayout(self.shortcut_box)
         self.base_layout.addWidget(self.sound_effects_check)
         self.base_layout.addWidget(self.buttonBox)
 
         self.setLayout(self.base_layout)
 
     def accept(self):
-        self.my_settings.setValue("key", self.key_field.text())
-        self.my_settings.setValue("region", self.region_combo.currentText())
-        self.my_settings.setValue("language", self.lang_combo.currentText())
-        self.my_settings.setValue("phoneme-system", self.phoneme_combo.currentText())
-        self.my_settings.setValue("field-index", self.fidx_spin.value())
-        self.my_settings.setValue("timeout", self.timeout_spin.value())
-        self.my_settings.setValue("sound-effects", self.sound_effects_check.isChecked())
+        app_settings.setValue("key", self.key_field.text())
+        app_settings.setValue("region", self.region_combo.currentText())
+        app_settings.setValue("language", self.lang_combo.currentText())
+        app_settings.setValue("phoneme-system", self.phoneme_combo.currentText())
+        app_settings.setValue("field-index", self.fidx_spin.value())
+        app_settings.setValue("timeout", self.timeout_spin.value())
+
+        curr_shortcut = self.shortcut_field.text()
+        app_settings.setValue("shortcut", curr_shortcut)
+        cp_action.setShortcut(QKeySequence(f"Ctrl+{curr_shortcut}"))
+
+        app_settings.setValue(
+            "sound-effects", str(self.sound_effects_check.isChecked())
+        )
+
         super(SettingsDialog, self).accept()
 
     def reject(self):
@@ -222,13 +246,13 @@ class SettingsDialog(QDialog):
 
 
 def settings_dialog():
-    SettingsDialog(app_settings, mw).show()
+    SettingsDialog(mw).show()
 
 
-cp_action = QAction("Test Your Pronunciation", mw)
+curr_shortcut = app_settings.value("shortcut", defaultValue="W")
 cp_action.triggered.connect(AnkiPA.test_pronunciation)
 mw.form.menuTools.addAction(cp_action)
-cp_action.setShortcut(QKeySequence("Ctrl+W"))
+cp_action.setShortcut(QKeySequence(f"Ctrl+{curr_shortcut}"))
 
 cps_action = QAction("AnkiPA Settings", mw)
 cps_action.triggered.connect(settings_dialog)

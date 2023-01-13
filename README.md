@@ -7,6 +7,8 @@ This project is an Anki addon for pronunciation assessment. You can record your 
 
 When you are reviewing a flashcard and press `Ctrl + W` AnkiPA starts to record your voice and then send the data to Azure Speech Services to get an pronunciation assessment based on their service.
 
+For Mac the command will be `Cmd + W`. It can be changed in the settings.
+
 ## Installation
 
 Open Anki and go to **Tools** -> **Add-ons** -> **Get Add-ons...** -> Place the code below and then click OK.
@@ -23,6 +25,14 @@ To use this addon you will need an Azure API key. You can create an free account
 With that informations you need to open your Anki and go to **Tools** and then **AnkiPA Settings**. A window will appear and there you place your key and select the region and also choose the language that you will be evaluating your pronunciation.
 
 <img src="https://i.imgur.com/DAE57WI.png" width="250px">
+
+## Settings
+In the settings besides the API configs you will find some other options:
+- **Field index:** it represents which card field will be used as text source for the pronunciation assessment. If you have a card with `Front` an `Back`, `0` represents the front and `1` the back. If you have more than 2 fields in your flashcard you can increase this following the same logic.
+- **Timeout:** how many seconds a pronunciation assessment can last
+- **Phoneme system:** only for en-US/GB, it defines how the syllables will be shown
+- **Shortcut:** your preferred shortcut to start recording your voice
+- **Enable sound effect:** sounds based on pronunciation score
 
 ## Testing key
 If you're just taking a look and don't want to have the work of creating your own key, try using this:
