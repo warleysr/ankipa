@@ -177,5 +177,5 @@ class AnkiPA:
         cls.RESULT = None
 
         widget = ResultsDialog(html, pronunciation)
-        widget.setWindowModality(False)
+        widget.setWindowModality(0)
         widget.show()
