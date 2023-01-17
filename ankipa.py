@@ -1,5 +1,6 @@
 from aqt.sound import record_audio
 from aqt import mw
+from aqt.qt import Qt
 import threading
 import json
 import re
@@ -177,5 +178,5 @@ class AnkiPA:
         cls.RESULT = None
 
         widget = ResultsDialog(html, pronunciation)
-        widget.setWindowModality(0)
+        widget.setWindowModality(Qt.WindowModality.NonModal)
         widget.show()
