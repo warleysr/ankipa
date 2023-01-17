@@ -1,7 +1,9 @@
 from aqt.sound import record_audio
 from aqt import mw
 import threading
+import json
 import re
+import os
 
 REMOVE_HTML_RE = re.compile("<[^<]+?>")
 REMOVE_TAG_RE = re.compile("\[[^\]]+\]")
@@ -104,7 +106,23 @@ class AnkiPA:
             return
 
         if cls.RESULT["RecognitionStatus"] != "Success":
-            showInfo("There was a service error recognizing your speech. Try again.")
+            from . import addon
+
+            # Save file for debug
+            with open(os.path.join(addon, "debug.json"), "w+") as fp:
+                data = {}
+                data["language"] = lang
+                data["region"] = region
+                data["text"] = cls.REFTEXT
+                data["response"] = cls.RESULT
+                json.dump(data, fp, indent=4)
+
+            showInfo(
+                "There was a service error recognizing your speech. "
+                + "Check <b>debug.json</b> in your addon's folder. "
+                + "Contact me in GitHub if you need help: "
+                + "<a href='github.com/warleysr'>github.com/warleysr</a>"
+            )
             return
 
         scores = cls.RESULT["NBest"][0]
