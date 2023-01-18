@@ -37,9 +37,18 @@ class AnkiPA:
             settings_dialog()
             return
 
-        idx = int(app_settings.value("field-index", defaultValue=0))
-        field = mw.col.models.fieldNames(mw.reviewer.card.note().model())[idx]
-        to_read = mw.reviewer.card.note()[field]
+        field_names = mw.col.models.fieldNames(mw.reviewer.card.note().model())
+        fields: str = app_settings.value("fields")
+        field_to_use = field_names[0]
+
+        if fields is not None:
+            fields = fields.replace(" ", "").split(",")
+            for field in fields:
+                if field in field_names:
+                    field_to_use = field
+                    break
+
+        to_read = mw.reviewer.card.note()[field_to_use]
 
         # Remove html tags
         to_read = re.sub(REMOVE_HTML_RE, " ", to_read).replace("&nbsp;", "")
@@ -103,7 +112,15 @@ class AnkiPA:
 
         if cls.RESULT is None or t.is_alive():
             cls.RESULT = None
-            showInfo("There was a network error recognizing your speech. Try again.")
+            showInfo(
+                "There was a <b>network error</b> recognizing your speech.<br><br>"
+                + "<b>&#x2022;</b> Check if your API credentials are correct.<br><br>"
+                + "<b>&#x2022;</b> Verify if your internet connection is working properly.<br><br>"
+                + "<b>&#x2022;</b> Try to increase the <b>Timeout</b> parameter in  "
+                + "Settings.<br><br>"
+                + "<b>&#x2022;</b> Also check Azure Speech services status in your region: "
+                + "<a href='https://status.azure.com/en-gb/status'>status.azure.com/en-gb/status</a>"
+            )
             return
 
         if cls.RESULT["RecognitionStatus"] != "Success":
@@ -119,10 +136,14 @@ class AnkiPA:
                 json.dump(data, fp, indent=4)
 
             showInfo(
-                "There was a service error recognizing your speech. "
-                + "Check <b>debug.json</b> in your addon's folder. "
-                + "Contact me in GitHub if you need help: "
-                + "<a href='github.com/warleysr'>github.com/warleysr</a>"
+                "There was a <b>service error</b> recognizing your speech.<br><br>"
+                + "<b>&#x2022;</b> Check if your microphone is working well "
+                + "and recording clearly.<br><br>"
+                + "<b>&#x2022;</b> Make sure the text that you are pronuncing is in the "
+                + "correct field and configured language. Take a look at the Settings.<br><br>"
+                + "<b>&#x2022;</b> Check <b>debug.json</b> file in your addon's folder "
+                + "and contact me on GitHub if you need help: "
+                + "<a href='https://github.com/warleysr/ankipa'>github.com/warleysr/ankipa</a>"
             )
             return
 

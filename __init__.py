@@ -136,10 +136,7 @@ class SettingsDialog(QDialog):
         # Key input
         self.key_label = QLabel("Azure API key:")
         self.key_field = QLineEdit()
-
-        curr_key = app_settings.value("key")
-        if curr_key is not None:
-            self.key_field.setText(curr_key)
+        self.key_field.setText(app_settings.value("key"))
 
         # Region options
         self.region_label = QLabel("Region:")
@@ -160,11 +157,11 @@ class SettingsDialog(QDialog):
         if curr_lang is not None:
             self.lang_combo.setCurrentIndex(langs.index(curr_lang))
 
-        # Field index option
-        self.fidx_label = QLabel("Field index:")
-        self.fidx_spin = QSpinBox()
-        idx = int(app_settings.value("field-index", defaultValue=0))
-        self.fidx_spin.setValue(idx)
+        # Fields list
+        self.fields_label = QLabel("Card fields:")
+        self.fields_text = QLineEdit()
+        self.fields_text.setText(app_settings.value("fields"))
+        self.fields_text.setPlaceholderText("front, back, other")
 
         # Timeout
         self.timeout_label = QLabel("Timeout:")
@@ -210,8 +207,8 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.region_combo)
         self.base_layout.addWidget(self.lang_label)
         self.base_layout.addWidget(self.lang_combo)
-        self.base_layout.addWidget(self.fidx_label)
-        self.base_layout.addWidget(self.fidx_spin)
+        self.base_layout.addWidget(self.fields_label)
+        self.base_layout.addWidget(self.fields_text)
         self.base_layout.addWidget(self.timeout_label)
         self.base_layout.addWidget(self.timeout_spin)
         self.base_layout.addWidget(self.phoneme_label)
@@ -228,7 +225,7 @@ class SettingsDialog(QDialog):
         app_settings.setValue("region", self.region_combo.currentText())
         app_settings.setValue("language", self.lang_combo.currentText())
         app_settings.setValue("phoneme-system", self.phoneme_combo.currentText())
-        app_settings.setValue("field-index", self.fidx_spin.value())
+        app_settings.setValue("fields", self.fields_text.text())
         app_settings.setValue("timeout", self.timeout_spin.value())
 
         curr_shortcut = self.shortcut_field.text()

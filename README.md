@@ -28,7 +28,7 @@ With that informations you need to open your Anki and go to **Tools** and then *
 
 ## Settings
 In the settings besides the API configs you will find some other options:
-- **Field index:** it represents which card field will be used as text source for the pronunciation assessment. If you have a card with `Front` an `Back`, `0` represents the front and `1` the back. If you have more than 2 fields in your flashcard you can increase this following the same logic.
+- **Card fields:** a comma separated list of the fields to be used as text source for evaluating the pronunciation, prioritazed by order. If none of them be found the first one will be used. The field names are case sensitive.
 - **Timeout:** how many seconds a pronunciation assessment can last
 - **Phoneme system:** only for en-US/GB, it defines how the syllables will be shown
 - **Shortcut:** your preferred shortcut to start recording your voice

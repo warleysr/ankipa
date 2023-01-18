@@ -43,4 +43,5 @@ def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system, time
     )
     audioFile.close()
 
-    AnkiPA.RESULT = response.json()
+    if response.status_code == 200:
+        AnkiPA.RESULT = response.json()
