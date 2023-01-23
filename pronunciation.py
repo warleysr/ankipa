@@ -1,9 +1,12 @@
 import requests
 import base64
+import json
 from .ankipa import AnkiPA
 
 
-def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system, timeout):
+def pron_assess(
+    region, lang, key, reference_text, recorded_voice, phoneme_system, timeout
+):
     def get_chunk(audio_source, chunk_size=1024):
         while True:
             chunk = audio_source.read(chunk_size)
@@ -11,10 +14,9 @@ def pron_assess(region, lang, key, reftext, recorded_voice, phoneme_system, time
                 break
             yield chunk
 
-    referenceText = reftext
     pronAssessmentParamsJson = (
-        '{"ReferenceText":"%s","GradingSystem":"HundredMark","Granularity": "Phoneme",'
-        % referenceText
+        '{"ReferenceText": %s,"GradingSystem":"HundredMark","Granularity": "Phoneme",'
+        % json.dumps(reference_text)
         + '"PhonemeAlphabet": "%s", "Dimension":"Comprehensive","EnableMiscue":"True"}'
         % phoneme_system
     )
