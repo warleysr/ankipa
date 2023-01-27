@@ -9,6 +9,7 @@ import tempfile
 import shutil
 import json
 import os
+from .stats import load_stats
 
 
 SETTINGS_ORGANIZATION = "github_warleysr"
@@ -25,6 +26,9 @@ with open(os.path.join(addon, "azure_data.json"), "r") as fp:
 # Load HTML template
 with open(os.path.join(addon, "template.html"), "r") as ft:
     html_template = ft.read()
+
+# Load statistics
+load_stats(addon)
 
 # Remove temporary files
 shutil.rmtree(tempfile.gettempdir() + os.sep + "ankipa", ignore_errors=True)
@@ -120,6 +124,7 @@ class SettingsDialog(QDialog):
 
     def __init__(self, *args, **kwargs):
         super(SettingsDialog, self).__init__(*args, **kwargs)
+        mw.garbage_collect_on_dialog_finish(self)
         self.setWindowTitle("AnkiPA Settings")
 
         self.base_layout = QVBoxLayout()

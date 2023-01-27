@@ -1,6 +1,7 @@
-from aqt.sound import record_audio
+from aqt.sound import RecordDialog
 from aqt import mw
 from aqt.qt import Qt
+from .stats import *
 import threading
 import json
 import re
@@ -28,6 +29,7 @@ class AnkiPA:
     TTS_GEN = None
     LAST_TTS = None
     RESULT = None
+    DIAG = None
 
     @classmethod
     def test_pronunciation(cls):
@@ -60,16 +62,19 @@ class AnkiPA:
 
         cid = mw.reviewer.card.id
         if cls.LAST_TTS != cid:
-            AnkiPA.TTS_GEN = None
+            cls.TTS_GEN = None
             cls.LAST_TTS = cid
 
         # Record user voice
-        record_audio(mw, mw, False, cls.after_record)
+        cls.DIAG = RecordDialog(mw, mw, cls.after_record)
 
     @classmethod
     def after_record(cls, recorded_voice):
         if not recorded_voice:
             return
+
+        elapsed = cls.DIAG._recorder.duration() - 0.5
+        elapsed = round(elapsed, 2)
 
         cls.RECORDED = recorded_voice
 
@@ -147,10 +152,22 @@ class AnkiPA:
             )
             return
 
+        update_stat("assessments", 1)
+        update_stat("pronunciation_time", elapsed)
+
+        assessments = get_stat("assessments")
+
         scores = cls.RESULT["NBest"][0]
         accuracy = scores["AccuracyScore"]
         fluency = scores["FluencyScore"]
         pronunciation = scores["PronScore"]
+
+        update_avg_stat("avg_accuracy", accuracy, assessments)
+        update_avg_stat("avg_fluency", fluency, assessments)
+        update_avg_stat("avg_pronunciation", pronunciation, assessments)
+
+        update_stat("words", len(scores["Words"]))
+        save_stats()
 
         # Replace percentages in template
         html = html_template.replace("[ACCURACY]", str(int(accuracy)))
