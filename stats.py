@@ -2,7 +2,7 @@ import json
 import time
 import os
 
-stats = None
+stats = dict()
 addonpath = None
 
 
@@ -22,6 +22,10 @@ def load_stats(addon):
 def get_stat(key: str) -> float:
     date = time.strftime("%d/%m/%Y")
     return stats[date][key]
+
+
+def get_stats_data() -> dict:
+    return stats
 
 
 def update_stat(key: str, increment: float, set_value=False):

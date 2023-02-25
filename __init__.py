@@ -1,11 +1,13 @@
-from aqt import mw
-from aqt.webview import AnkiWebView
+from aqt import mw, gui_hooks
+from aqt.webview import AnkiWebView, WebContent
 from aqt.utils import showInfo
 from aqt.qt import *
 from aqt.sound import play
+from anki.hooks import addHook
 from .tts import TTS
 from .ankipa import AnkiPA
 import tempfile
+import time
 import shutil
 import json
 import os
@@ -16,7 +18,6 @@ SETTINGS_ORGANIZATION = "github_warleysr"
 SETTINGS_APPLICATION = "ankipa"
 
 app_settings = QSettings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION)
-cp_action = QAction("Test Your Pronunciation", mw)
 
 # Load Azure API data
 addon = os.path.dirname(os.path.abspath(__file__))
@@ -113,8 +114,174 @@ class ResultsDialog(QDialog):
         if app_settings.value("sound-effects", "False") == "True":
             play(get_sound(pronunciation_score))
 
-    def closeEvent(self, a0) -> None:
-        return super().closeEvent(a0)
+
+class AnkiPADialog(QDialog):
+    def __init__(self, *args, **kwargs):
+        super(AnkiPADialog, self).__init__(*args, **kwargs)
+
+        self.setWindowTitle("AnkiPA Options")
+
+        self.base_layout = QVBoxLayout()
+
+        # AnkiPA label
+        self.ankipa_label = QLabel("AnkiPA Options")
+        self.ankipa_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ankipa_label.setFont(SettingsDialog._FONT_HEADER)
+
+        # Settings
+        self.settings_btn = QPushButton("Settings", self)
+        self.settings_btn.clicked.connect(self.settings_dialog)
+        self.settings_btn.setIcon(
+            QIcon(os.path.join(addon, f"icons{os.sep}settings.png"))
+        )
+        self.settings_btn.setIconSize(QSize(32, 32))
+
+        # Statistics
+        self.statistics_btn = QPushButton("Statistics", self)
+        self.statistics_btn.clicked.connect(self.statistics_dialog)
+        self.statistics_btn.setIcon(
+            QIcon(os.path.join(addon, f"icons{os.sep}statistics.png"))
+        )
+        self.statistics_btn.setIconSize(QSize(32, 32))
+
+        # About
+        self.about_btn = QPushButton("About", self)
+        self.about_btn.clicked.connect(self.about_dialog)
+        self.about_btn.setIcon(QIcon(os.path.join(addon, f"icons{os.sep}about.png")))
+        self.about_btn.setIconSize(QSize(32, 32))
+
+        self.base_layout.addWidget(self.ankipa_label)
+        self.base_layout.addWidget(self.settings_btn)
+        self.base_layout.addWidget(self.statistics_btn)
+        self.base_layout.addWidget(self.about_btn)
+
+        self.setLayout(self.base_layout)
+
+        self.setMinimumWidth(180)
+
+    def settings_dialog(self):
+        SettingsDialog(mw).show()
+
+    def statistics_dialog(self):
+        html = ""
+        with open(os.path.join(addon, f"chart{os.sep}chart.html"), "r") as fp:
+            for line in fp.readlines():
+                html += line
+
+        # Generate statistics data
+        stats_data = stats.get_stats_data()
+        days = sorted(
+            list(stats_data.keys()),
+            key=lambda d: time.strptime(d, "%d/%m/%Y"),
+            reverse=True,
+        )
+        ndays = len(days)
+        days = days[: 31 if ndays > 31 else ndays]
+        days = days[::-1]
+
+        pronunciation = []
+        accuracy = []
+        fluency = []
+        pron_time = []
+        pron_words = []
+        assessments = []
+
+        for day in days:
+            pronunciation.append(stats_data[day]["avg_pronunciation"])
+            accuracy.append(stats_data[day]["avg_accuracy"])
+            fluency.append(stats_data[day]["avg_fluency"])
+            pron_time.append(stats_data[day]["pronunciation_time"])
+            pron_words.append(stats_data[day]["words"])
+            assessments.append(stats_data[day]["assessments"])
+
+        html = (
+            html.replace("['DAYS']", str(days))
+            .replace("['PRONUNCIATION']", str(pronunciation))
+            .replace("['ACCURACY']", str(accuracy))
+            .replace("['FLUENCY']", str(fluency))
+            .replace("['PRON_TIME']", str(pron_time))
+            .replace("['PRON_WORDS']", str(pron_words))
+            .replace("['ASSESSMENTS']", str(assessments))
+        )
+
+        StatisticsDialog(html).show()
+
+    def about_dialog(self):
+        dialog = QDialog(mw)
+        dialog.setWindowTitle("About AnkiPA")
+        dialog.setFixedSize(750, 500)
+
+        icon = QPixmap(os.path.join(addon, f"icons{os.sep}ankipa.png"))
+        icon_label = QLabel()
+        icon_label.setFixedSize(128, 128)
+        icon_label.setPixmap(icon)
+        icon_label.setScaledContents(True)
+
+        font_header = QFont()
+        font_header.setPointSize(24)
+        font_header.setBold(True)
+
+        font_body = QFont()
+        font_body.setPointSize(12)
+
+        ankipa_label = QLabel("AnkiPA - Pronunciation Assessment")
+        ankipa_label.setFont(font_header)
+        ankipa_label.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+
+        hbox = QHBoxLayout()
+        hbox.addWidget(icon_label)
+        hbox.addWidget(ankipa_label)
+
+        about = (
+            "AnkiPA is an addon that helps you practice your pronunciation. Your voice is recorded "
+            "and compared to the reference text to evaluate the pronunciation. Within seconds you "
+            "receive an overview containing accuracy, fluency and pronunciation score and which words "
+            "you pronounced correctly and what mistakes you commited.\n\n"
+            "It uses Microsoft Azure Speech services to provide the assessment results. Your voice "
+            "is sent to their servers and if you play TTS the audio data is retrieved. Besides that AnkiPA "
+            "doesn't make any other internet connection. It's recommended to create your own API key in "
+            "the closest available region to faster evaluations.\n\n"
+            "If you find a bug or need help reach me out by opening an issue on GitHub."
+        )
+        about_edit = QTextEdit()
+        about_edit.setPlainText(about)
+        about_edit.setReadOnly(True)
+        about_edit.setFont(font_body)
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok, Qt.Horizontal, self)
+        buttons.accepted.connect(dialog.accept)
+
+        contact_btn = QPushButton("Contact author")
+        contact_btn.clicked.connect(
+            lambda: QDesktopServices.openUrl(QUrl("https://github.com/warleysr/ankipa"))
+        )
+        buttons.addButton(contact_btn, QDialogButtonBox.ActionRole)
+
+        layout = QVBoxLayout()
+        layout.addLayout(hbox)
+        layout.addWidget(about_edit)
+        layout.addWidget(buttons)
+        layout.setAlignment(buttons, Qt.AlignmentFlag.AlignCenter)
+
+        dialog.setLayout(layout)
+
+        dialog.show()
+
+
+class StatisticsDialog(QDialog):
+    def __init__(self, html: str):
+        super().__init__(mw)
+        self.setWindowTitle("AnkiPA Statistics")
+
+        vbox = QVBoxLayout()
+        self.web = AnkiWebView(self)
+
+        vbox.addWidget(self.web)
+
+        self.web.stdHtml(html)
+        self.resize(1024, 720)
+
+        self.setLayout(vbox)
 
 
 class SettingsDialog(QDialog):
@@ -235,7 +402,7 @@ class SettingsDialog(QDialog):
 
         curr_shortcut = self.shortcut_field.text()
         app_settings.setValue("shortcut", curr_shortcut)
-        cp_action.setShortcut(QKeySequence(f"Ctrl+{curr_shortcut}"))
+        shortcut.setKey(QKeySequence(f"Ctrl+{curr_shortcut}"))
 
         app_settings.setValue(
             "sound-effects", str(self.sound_effects_check.isChecked())
@@ -247,15 +414,35 @@ class SettingsDialog(QDialog):
         super(SettingsDialog, self).reject()
 
 
-def settings_dialog():
-    SettingsDialog(mw).show()
+def main_dialog():
+    AnkiPADialog(mw).show()
 
+
+def start_assessment():
+    if mw.reviewer.card:
+        AnkiPA.test_pronunciation()
+    else:
+        main_dialog()
+
+
+def on_webview_will_set_content(web_content: WebContent, _):
+    addon_package = mw.addonManager.addonFromModule(__name__)
+    web_content.js.append(f"/_addons/{addon_package}/chart/chart.js")
+
+
+mw.addonManager.setWebExports(__name__, r"chart/.*(css|js)")
+gui_hooks.webview_will_set_content.append(on_webview_will_set_content)
+
+
+ankipa_action = QAction("AnkiPA...", mw)
+ankipa_action.triggered.connect(main_dialog)
+mw.form.menuTools.addAction(ankipa_action)
 
 curr_shortcut = app_settings.value("shortcut", defaultValue="W")
-cp_action.triggered.connect(AnkiPA.test_pronunciation)
-mw.form.menuTools.addAction(cp_action)
-cp_action.setShortcut(QKeySequence(f"Ctrl+{curr_shortcut}"))
+shortcut = QShortcut(QKeySequence(f"Ctrl+{curr_shortcut}"), mw)
 
-cps_action = QAction("AnkiPA Settings", mw)
-cps_action.triggered.connect(settings_dialog)
-mw.form.menuTools.addAction(cps_action)
+start_action = QAction("Start pronunciation assessment", mw)
+start_action.triggered.connect(AnkiPA.test_pronunciation)
+
+mw.addAction(start_action)
+shortcut.activated.connect(start_assessment)

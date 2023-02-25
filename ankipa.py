@@ -33,11 +33,7 @@ class AnkiPA:
 
     @classmethod
     def test_pronunciation(cls):
-        from . import settings_dialog, app_settings
-
-        if not mw.reviewer.card:
-            settings_dialog()
-            return
+        from . import app_settings
 
         field_names = mw.col.models.fieldNames(mw.reviewer.card.note().model())
         fields: str = app_settings.value("fields")

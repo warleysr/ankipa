@@ -2,7 +2,7 @@
     "languages": {
         "English (United States)": ["en-US", "en-US-GuyNeural"],
         "English (United Kingdom)": ["en-GB", "en-GB-AlfieNeural"],
-        "English (Australia)": ["en-AU", "en-AU-DarrenNeural"],
+        "English (Australia)": ["en-AU", "en-AU-WilliamNeural"],
         "English (India)": ["en-IN", "en-IN-PrabhatNeural"],
         "Spanish (Spain)": ["es-ES", "es-ES-AlvaroNeural"],
         "Spanish (Mexico)": ["es-MX", "es-MX-CecilioNeural"],

@@ -1,0 +1,132 @@
+<style>
+    body {
+        background-color: white;
+    }
+    h2 {
+        color: black;
+    }
+</style>
+ <div>
+    <h2>Scores Averages</h2>
+    <canvas id="averages"></canvas>
+    <h2>Pronunciation Time</h2>
+    <canvas id="pronunciation_time"></canvas>
+    <h2>Pronounced Words</h2>
+    <canvas id="pronounced_words"></canvas>
+    <h2>Assessments Performed</h2>
+    <canvas id="assessments"></canvas>
+  </div>
+  
+  <script>
+    // Averages Chart
+    const avgs = document.getElementById('averages');
+    
+    new Chart(avgs, {
+      type: 'line',
+      data: {
+        labels: ['DAYS'],
+        datasets: [
+        {
+          label: 'Pronunciation',
+          data: ['PRONUNCIATION'],
+          borderColor: '#0c9b26',
+          backgroundColor: '#0c9b26'
+        },
+        {
+          label: 'Accuracy',
+          data: ['ACCURACY'],
+          borderColor: '#09a2c4',
+          backgroundColor: '#09a2c4',
+        },
+        {
+          label: 'Fluency',
+          data: ['FLUENCY'],
+          borderColor: '#c4099f',
+          backgroundColor: '#c4099f'
+        },
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Pronunciation Time Chart
+    const ctx = document.getElementById('pronunciation_time');
+  
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['DAYS'],
+        datasets: [
+        {
+          label: 'Pronunciation Time',
+          data: ['PRON_TIME'],
+          backgroundColor: '#4dc9f6',
+          borderColor: '#4dc9f6'
+        }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Pronounced Words Chart
+    const wpron = document.getElementById('pronounced_words');
+  
+    new Chart(wpron, {
+      type: 'line',
+      data: {
+        labels: ['DAYS'],
+        datasets: [
+        {
+          label: 'Pronounced Words',
+          data: ['PRON_WORDS'],
+          backgroundColor: '#c19b30',
+          borderColor: '#c19b30'
+        }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+
+    // Assessments Chart
+    const assess = document.getElementById('assessments');
+  
+    new Chart(assess, {
+      type: 'line',
+      data: {
+        labels: ['DAYS'],
+        datasets: [
+        {
+          label: 'Assessments',
+          data: ['ASSESSMENTS'],
+          backgroundColor: '#13b59c',
+          borderColor: '#13b59c'
+        }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
