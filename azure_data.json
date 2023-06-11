@@ -6,13 +6,17 @@
         "English (India)": ["en-IN", "en-IN-PrabhatNeural"],
         "Spanish (Spain)": ["es-ES", "es-ES-AlvaroNeural"],
         "Spanish (Mexico)": ["es-MX", "es-MX-CecilioNeural"],
+        "Portuguese (Brazil)": ["pt-BR", "pt-BR-AntonioNeural"],
         "French (France)": ["fr-FR", "fr-FR-AlainNeural"],
         "French (Canada)": ["fr-CA", "fr-CA-AntoineNeural"],
         "German (Germany)": ["de-DE", "de-DE-BerndNeural"],
         "Norwegian (Bokm\u00e5l, Norway)": ["nb-NO", "nb-NO-FinnNeural"],
         "Japanese (Japan)": ["ja-JP", "ja-JP-NanamiNeural"],
         "Chinese (Mandarin, Simplified)": ["zh-CN", "zh-CN-YunxiNeural"],
+        "Korean (Korea)": ["ko-KR", "ko-KR-BongJinNeural"],
         "Vietnamese (Vietnam)": ["vi-VN", "vi-VN-NamMinhNeural"],
+        "Malay (Malaysia)": ["ms-MY", "ms-MY-OsmanNeural"],
+        "Tamil (India)": ["ta-IN", "ta-IN-ValluvarNeural"],
         "Arabic (Saudi Arabia)": ["ar-SA", "ar-SA-HamedNeural"]
     },
     "regions": [
