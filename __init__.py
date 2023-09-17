@@ -3,7 +3,6 @@ from aqt.webview import AnkiWebView, WebContent
 from aqt.utils import showInfo
 from aqt.qt import *
 from aqt.sound import play
-from anki.hooks import addHook
 from .tts import TTS
 from .ankipa import AnkiPA
 import tempfile
@@ -12,6 +11,7 @@ import shutil
 import json
 import os
 from .stats import load_stats
+from .updater import update_available_languages
 
 
 SETTINGS_ORGANIZATION = "github_warleysr"
@@ -21,8 +21,26 @@ app_settings = QSettings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION)
 
 # Load Azure API data
 addon = os.path.dirname(os.path.abspath(__file__))
-with open(os.path.join(addon, "azure_data.json"), "r") as fp:
+data_file = os.path.join(addon, "azure_data.json")
+with open(data_file, "r") as fp:
     data = json.load(fp)
+
+# Update languages
+new_languages = update_available_languages(data["languages"])
+if new_languages:
+    with open(data_file, "w") as fp:
+        json.dump(data, fp, indent=4)
+    from . import showInfo
+
+    update_message = (
+        f"<h3>AnkiPA Update</h3><br> These {len(new_languages)} new languages "
+        "was added to the addon:<br><br>"
+    )
+    for lang in new_languages:
+        update_message += f"&#x2022; {lang}<br>"
+    showInfo(update_message)
+
+fp.close()
 
 # Load HTML template
 with open(os.path.join(addon, "template.html"), "r") as ft:
@@ -322,7 +340,7 @@ class SettingsDialog(QDialog):
         # Language options
         self.lang_label = QLabel("Language:")
         self.lang_combo = QComboBox()
-        langs = list(data["languages"].keys())
+        langs = sorted(list(data["languages"].keys()))
         self.lang_combo.addItems(langs)
 
         curr_lang = app_settings.value("language")
