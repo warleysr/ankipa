@@ -266,14 +266,14 @@ class AnkiPADialog(QDialog):
         about_edit.setReadOnly(True)
         about_edit.setFont(font_body)
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok, Qt.Horizontal, self)
-        buttons.accepted.connect(dialog.accept)
-
+        buttons = QDialogButtonBox() 
         contact_btn = QPushButton("Contact author")
         contact_btn.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl("https://github.com/warleysr/ankipa"))
         )
-        buttons.addButton(contact_btn, QDialogButtonBox.ActionRole)
+        buttons.addButton("Ok", QDialogButtonBox.ButtonRole.AcceptRole)
+        buttons.addButton(contact_btn, QDialogButtonBox.ButtonRole.ActionRole) 
+        buttons.accepted.connect(dialog.accept)      
 
         layout = QVBoxLayout()
         layout.addLayout(hbox)
@@ -314,11 +314,11 @@ class SettingsDialog(QDialog):
 
         self.base_layout = QVBoxLayout()
 
-        buttons = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-
-        self.buttonBox = QDialogButtonBox(buttons)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.button_box = QDialogButtonBox()
+        self.button_box.addButton("Ok", QDialogButtonBox.ButtonRole.AcceptRole)
+        self.button_box.addButton("Cancel", QDialogButtonBox.ButtonRole.RejectRole)
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
 
         self.api_label = QLabel("Configure your AnkiPA addon")
         self.api_label.setFont(self._FONT_HEADER)
@@ -406,7 +406,7 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.shortcut_label)
         self.base_layout.addLayout(self.shortcut_box)
         self.base_layout.addWidget(self.sound_effects_check)
-        self.base_layout.addWidget(self.buttonBox)
+        self.base_layout.addWidget(self.button_box)
 
         self.setLayout(self.base_layout)
 
