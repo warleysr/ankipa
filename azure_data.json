@@ -87,6 +87,18 @@
         "Russian (Russia)": [
             "ru-RU",
             "ru-RU-DmitryNeural"
+        ],
+        "Swedish (Sweden)": [
+            "sv-SE",
+            "sv-SE-MattiasNeural"
+        ],
+        "Chinese (Cantonese, Traditional)": [
+            "zh-HK",
+            "zh-HK-WanLungNeural"
+        ],
+        "Dutch (Netherlands)": [
+            "nl-NL",
+            "nl-NL-MaartenNeural"
         ]
     },
     "regions": [
