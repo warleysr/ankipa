@@ -2,7 +2,7 @@ from aqt import mw, gui_hooks
 from aqt.webview import AnkiWebView, WebContent
 from aqt.utils import showInfo
 from aqt.qt import *
-from aqt.sound import play
+from aqt.sound import play, MpvManager, av_player
 from .tts import TTS
 from .ankipa import AnkiPA
 import tempfile
@@ -52,26 +52,10 @@ load_stats(addon)
 # Remove temporary files
 shutil.rmtree(tempfile.gettempdir() + os.sep + "ankipa", ignore_errors=True)
 
-
-def replay_voice():
-    play(AnkiPA.RECORDED)
-
-
-def replay_tts():
-    if AnkiPA.TTS_GEN is None:
-        region = app_settings.value("region")
-        language = app_settings.value("language")
-        key = app_settings.value("key")
-        voice = data["languages"][language][1]
-
-        generated = TTS.gen_tts_audio(region, key, voice, AnkiPA.REFTEXT)
-        if generated is None:
-            showInfo("There was an error generating the TTS audio.")
-            return
-
-        AnkiPA.TTS_GEN = generated
-
-    play(AnkiPA.TTS_GEN)
+def set_audio_speed(speed: float):
+    for player in av_player.players:
+        if isinstance(player, MpvManager):
+            player.command("set_property", "speed", speed)
 
 
 def get_color(percentage):
@@ -98,6 +82,7 @@ def get_sound(percentage):
 
 
 class ResultsDialog(QDialog):
+
     def __init__(self, html: str, pronunciation_score: float):
         super().__init__(mw)
         self.setWindowTitle("AnkiPA Results")
@@ -106,22 +91,30 @@ class ResultsDialog(QDialog):
         self.web = AnkiWebView(self)
 
         container = QWidget(self)
-        container.setFixedSize(280, 40)
+        container.setFixedSize(380, 40)
         container.move(5, 5)
-        self.buttons = QHBoxLayout(container)
+        self.options = QHBoxLayout(container)
 
         self.replay_btn = QPushButton("Replay your voice")
         self.replay_btn.setFixedSize(150, 20)
-        self.replay_btn.clicked.connect(replay_voice)
+        self.replay_btn.clicked.connect(self.replay_voice)
 
         self.play_tts_btn = QPushButton("Play TTS")
         self.play_tts_btn.setFixedSize(100, 20)
-        self.play_tts_btn.clicked.connect(replay_tts)
+        self.play_tts_btn.clicked.connect(self.replay_tts)
 
-        self.buttons.addWidget(self.replay_btn)
-        self.buttons.addWidget(self.play_tts_btn)
+        self.audio_speed = QSlider(Qt.Orientation.Horizontal, self)
+        self.audio_speed.setFixedSize(100, 20)
+        self.audio_speed.setRange(10, 200)
+        self.audio_speed.setValue(100)
+        self.audio_speed.setToolTip("Control audio speed")
+        self.audio_speed.valueChanged.connect(self.update_audio_speed)
 
-        vbox.addLayout(self.buttons)
+        self.options.addWidget(self.replay_btn)
+        self.options.addWidget(self.play_tts_btn)
+        self.options.addWidget(self.audio_speed)
+
+        vbox.addLayout(self.options)
         vbox.addWidget(self.web)
 
         self.web.setHtml(html)
@@ -131,6 +124,31 @@ class ResultsDialog(QDialog):
 
         if app_settings.value("sound-effects", "False") == "True":
             play(get_sound(pronunciation_score))
+
+    def replay_voice(self):
+        self.update_audio_speed()
+        play(AnkiPA.RECORDED)
+
+
+    def replay_tts(self):
+        self.update_audio_speed()
+        if AnkiPA.TTS_GEN is None:
+            region = app_settings.value("region")
+            language = app_settings.value("language")
+            key = app_settings.value("key")
+            voice = data["languages"][language][1]
+
+            generated = TTS.gen_tts_audio(region, key, voice, AnkiPA.REFTEXT)
+            if generated is None:
+                showInfo("There was an error generating the TTS audio.")
+                return
+
+            AnkiPA.TTS_GEN = generated
+
+        play(AnkiPA.TTS_GEN)
+
+    def update_audio_speed(self):
+        set_audio_speed(self.audio_speed.value() / 100)
 
 
 class AnkiPADialog(QDialog):
@@ -451,6 +469,7 @@ def on_webview_will_set_content(web_content: WebContent, _):
 mw.addonManager.setWebExports(__name__, r"chart/.*(css|js)")
 gui_hooks.webview_will_set_content.append(on_webview_will_set_content)
 
+gui_hooks.av_player_did_end_playing.append(lambda _: set_audio_speed(1.0))
 
 ankipa_action = QAction("AnkiPA...", mw)
 ankipa_action.triggered.connect(main_dialog)
