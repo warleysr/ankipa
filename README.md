@@ -24,7 +24,7 @@ To use this addon you will need an Azure API key. You can create an free account
 
 With that informations you need to open your Anki and go to **Tools** and then **AnkiPA Settings**. A window will appear and there you place your key and select the region and also choose the language that you will be evaluating your pronunciation.
 
-<img src="https://i.imgur.com/kPbw66L.png" width="250px">
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; <img src="https://i.imgur.com/kPbw66L.png">
 
 ## Settings
 In the settings besides the API configs you will find some other options:
@@ -47,6 +47,11 @@ AnkiPA relies on <b>Azure Pronunciation Assessment</b>, which supports multiple 
 The addon update the supported languages automatically, and the newly added ones will appear on the options when Microsoft releases them.
 
 You can check the current supported languages <a href="https://learn.microsoft.com/en-us/azure/ai-services/speech-service/language-support?tabs=pronunciation-assessment">here</a>.
+
+Also it has an updater that automatically will add new languages options when it's made available by Microsoft.
+
+&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp; <img src="https://i.imgur.com/fsj1yEC.png">
+
 
 
 ## Results
