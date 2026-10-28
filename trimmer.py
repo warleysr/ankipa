@@ -567,7 +567,7 @@ class AudioTrimDialog(QDialog):
 
         # Dialog buttons (Confirm & Cancel)
         self.button_box = QDialogButtonBox()
-        self.confirm_btn = QPushButton("Confirm & Send")
+        self.confirm_btn = QPushButton("Confirm and Send")
         self.confirm_btn.setDefault(True)
         self.confirm_btn.setStyleSheet("font-weight: bold; padding: 6px 16px;")
         self.cancel_btn = QPushButton("Cancel")
