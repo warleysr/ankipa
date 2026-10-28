@@ -103,11 +103,6 @@ class AnkiPA:
             mw.reviewer.web.eval("window.ankipaRemoveHighlight ? window.ankipaRemoveHighlight() : null")
             return
 
-        elapsed = cls.DIAG._recorder.duration() - 0.5
-        elapsed = round(elapsed, 2)
-
-        cls.RECORDED = recorded_voice
-
         from . import (
             app_settings,
             data,
@@ -125,6 +120,22 @@ class AnkiPA:
             showInfo("Please configure your Azure service properly.")
             mw.reviewer.web.eval("window.ankipaRemoveHighlight ? window.ankipaRemoveHighlight() : null")
             return
+
+        elapsed = cls.DIAG._recorder.duration() - 0.5
+        elapsed = round(elapsed, 2)
+
+        # Visual audio trimming if enabled
+        if app_settings.value("trim-audio", "False") == "True":
+            from .trimmer import AudioTrimDialog
+            trim_dialog = AudioTrimDialog(recorded_voice, mw, reference_text=cls.REFTEXT)
+            if trim_dialog.exec():
+                recorded_voice = trim_dialog.get_trimmed_file()
+                elapsed = trim_dialog.get_trimmed_duration()
+            else:
+                mw.reviewer.web.eval("window.ankipaRemoveHighlight ? window.ankipaRemoveHighlight() : null")
+                return
+
+        cls.RECORDED = recorded_voice
 
         # Perform pronunciation assessment
         lang = data["languages"][language][0]

@@ -36,8 +36,11 @@ def update_available_languages(current_data: dict):
             if tts_tds[0].text != lang_code:
                 continue
             voices = tts_tds[2].text.split(")")
-            tts_voice = next((voice for voice in voices if "Male" in voice), None)
-            tts_voice = tts_voice.split("(")[0].strip()
+            voice_match = next((voice for voice in voices if "Male" in voice), None)
+            if voice_match:
+                tts_voice = voice_match.split("(")[0].strip()
+            elif voices and voices[0].strip():
+                tts_voice = voices[0].split("(")[0].strip()
 
         if not tts_voice:
             continue

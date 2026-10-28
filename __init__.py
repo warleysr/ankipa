@@ -407,6 +407,12 @@ class SettingsDialog(QDialog):
             True if app_settings.value("sound-effects", "False") == "True" else False
         )
 
+        # Trim audio before sending
+        self.trim_audio_check = QCheckBox("Cortar áudio antes de enviar / Trim audio before sending")
+        self.trim_audio_check.setChecked(
+            True if app_settings.value("trim-audio", "False") == "True" else False
+        )
+
         # Text extraction preference
         self.extraction_label = QLabel("Text extraction method:")
         self.extraction_combo = QComboBox()
@@ -441,6 +447,7 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.shortcut_label)
         self.base_layout.addLayout(self.shortcut_box)
         self.base_layout.addWidget(self.sound_effects_check)
+        self.base_layout.addWidget(self.trim_audio_check)
         self.base_layout.addWidget(self.extraction_label)
         self.base_layout.addWidget(self.extraction_combo)
         self.base_layout.addWidget(self.selectors_label)
@@ -463,6 +470,10 @@ class SettingsDialog(QDialog):
 
         app_settings.setValue(
             "sound-effects", str(self.sound_effects_check.isChecked())
+        )
+
+        app_settings.setValue(
+            "trim-audio", str(self.trim_audio_check.isChecked())
         )
 
         extraction_methods = ["auto", "dom", "fields"]
