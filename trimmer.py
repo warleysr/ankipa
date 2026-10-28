@@ -447,7 +447,7 @@ class AudioWaveformWidget(QWidget):
 class AudioTrimDialog(QDialog):
     def __init__(self, audio_path: str, parent=None, reference_text: str = None):
         super().__init__(parent)
-        self.setWindowTitle("Cortar Áudio / Trim Audio - AnkiPA")
+        self.setWindowTitle("Trim Audio - AnkiPA")
         self.setMinimumWidth(680)
 
         self.audio_path = audio_path
@@ -471,20 +471,20 @@ class AudioTrimDialog(QDialog):
         vbox.setSpacing(12)
 
         # Header instructions
-        title_label = QLabel("<b>Cortar áudio antes de enviar para a Azure</b>")
+        title_label = QLabel("<b>Trim audio before sending to Azure</b>")
         title_label.setStyleSheet("font-size: 14px;")
         vbox.addWidget(title_label)
 
         sub_label = QLabel(
-            "Selecione o trecho de áudio que deseja avaliar. O trecho selecionado "
-            "será enviado para a API de Pronúncia da Azure."
+            "Select the audio segment you want to evaluate. Only the selected snippet "
+            "will be sent to Azure Speech API."
         )
         sub_label.setWordWrap(True)
         sub_label.setStyleSheet("color: #a0aec0;")
         vbox.addWidget(sub_label)
 
         if self.reference_text:
-            ref_label = QLabel(f"<b>Texto de referência:</b> <i>{self.reference_text}</i>")
+            ref_label = QLabel(f"<b>Reference text:</b> <i>{self.reference_text}</i>")
             ref_label.setWordWrap(True)
             ref_label.setStyleSheet(
                 "background-color: rgba(255, 255, 255, 0.05); padding: 8px; border-radius: 4px;"
@@ -499,7 +499,7 @@ class AudioTrimDialog(QDialog):
         # Range adjustment controls & duration display
         range_layout = QHBoxLayout()
 
-        start_label = QLabel("Início:")
+        start_label = QLabel("Start:")
         self.start_spin = QDoubleSpinBox()
         self.start_spin.setRange(0.0, max(0.1, self.waveform.duration))
         self.start_spin.setSingleStep(0.05)
@@ -508,7 +508,7 @@ class AudioTrimDialog(QDialog):
         self.start_spin.setValue(self.waveform.start_time)
         self.start_spin.valueChanged.connect(self._on_spin_changed)
 
-        end_label = QLabel("Fim:")
+        end_label = QLabel("End:")
         self.end_spin = QDoubleSpinBox()
         self.end_spin.setRange(0.0, max(0.1, self.waveform.duration))
         self.end_spin.setSingleStep(0.05)
@@ -534,12 +534,12 @@ class AudioTrimDialog(QDialog):
 
         # Action bar: Auto-trim silence + Reset
         tools_layout = QHBoxLayout()
-        self.auto_trim_btn = QPushButton("⚡ Cortar Silêncio (Auto-Trim)")
-        self.auto_trim_btn.setToolTip("Detecta a fala e remove o silêncio no início e no fim")
+        self.auto_trim_btn = QPushButton("⚡ Auto-Trim Silence")
+        self.auto_trim_btn.setToolTip("Detects speech and removes silence at start and end")
         self.auto_trim_btn.clicked.connect(self.waveform.auto_trim_silence)
 
-        self.reset_btn = QPushButton("↺ Selecionar Tudo")
-        self.reset_btn.setToolTip("Restaura a seleção para a duração completa do áudio")
+        self.reset_btn = QPushButton("↺ Select All")
+        self.reset_btn.setToolTip("Resets selection to the full audio duration")
         self.reset_btn.clicked.connect(self.waveform.reset_selection)
 
         tools_layout.addWidget(self.auto_trim_btn)
@@ -547,13 +547,13 @@ class AudioTrimDialog(QDialog):
         tools_layout.addStretch()
 
         # Playback buttons
-        self.play_snippet_btn = QPushButton("▶ Escutar Trecho")
+        self.play_snippet_btn = QPushButton("▶ Play Snippet")
         self.play_snippet_btn.setStyleSheet(
             "font-weight: bold; padding: 6px 14px; background-color: #0284c7; color: white;"
         )
         self.play_snippet_btn.clicked.connect(self._toggle_play_snippet)
 
-        self.play_full_btn = QPushButton("Escutar Áudio Completo")
+        self.play_full_btn = QPushButton("Play Full Audio")
         self.play_full_btn.clicked.connect(self._toggle_play_full)
 
         tools_layout.addWidget(self.play_snippet_btn)
@@ -567,10 +567,10 @@ class AudioTrimDialog(QDialog):
 
         # Dialog buttons (Confirm & Cancel)
         self.button_box = QDialogButtonBox()
-        self.confirm_btn = QPushButton("Confirmar e Enviar")
+        self.confirm_btn = QPushButton("Confirm & Send")
         self.confirm_btn.setDefault(True)
         self.confirm_btn.setStyleSheet("font-weight: bold; padding: 6px 16px;")
-        self.cancel_btn = QPushButton("Cancelar")
+        self.cancel_btn = QPushButton("Cancel")
 
         self.button_box.addButton(self.confirm_btn, QDialogButtonBox.ButtonRole.AcceptRole)
         self.button_box.addButton(self.cancel_btn, QDialogButtonBox.ButtonRole.RejectRole)
@@ -585,7 +585,7 @@ class AudioTrimDialog(QDialog):
     def _update_duration_label(self):
         sel_dur = max(0.0, self.waveform.end_time - self.waveform.start_time)
         tot_dur = self.waveform.duration
-        self.duration_label.setText(f"Duração: {sel_dur:.2f}s  (Total: {tot_dur:.2f}s)")
+        self.duration_label.setText(f"Duration: {sel_dur:.2f}s  (Total: {tot_dur:.2f}s)")
 
     def _on_waveform_range_changed(self, s: float, e: float):
         self.start_spin.blockSignals(True)
@@ -606,8 +606,8 @@ class AudioTrimDialog(QDialog):
         self.playback_timer.stop()
         self.is_playing = False
         self.waveform.set_playhead(None)
-        self.play_snippet_btn.setText("▶ Escutar Trecho")
-        self.play_full_btn.setText("Escutar Áudio Completo")
+        self.play_snippet_btn.setText("▶ Play Snippet")
+        self.play_full_btn.setText("Play Full Audio")
         if av_player:
             try:
                 av_player.stop_and_clear_queue()
@@ -657,9 +657,9 @@ class AudioTrimDialog(QDialog):
         self.playback_start_wall = time.time()
 
         if is_snippet:
-            self.play_snippet_btn.setText("⏹ Parar")
+            self.play_snippet_btn.setText("⏹ Stop")
         else:
-            self.play_full_btn.setText("⏹ Parar")
+            self.play_full_btn.setText("⏹ Stop")
 
         self.waveform.set_playhead(offset)
         self.playback_timer.start()

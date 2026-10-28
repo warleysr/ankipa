@@ -408,7 +408,7 @@ class SettingsDialog(QDialog):
         )
 
         # Trim audio before sending
-        self.trim_audio_check = QCheckBox("Cortar áudio antes de enviar / Trim audio before sending")
+        self.trim_audio_check = QCheckBox("Trim audio before sending")
         self.trim_audio_check.setChecked(
             True if app_settings.value("trim-audio", "False") == "True" else False
         )

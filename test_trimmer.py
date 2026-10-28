@@ -161,11 +161,11 @@ class TestAudioTrimmer(unittest.TestCase):
         # Test playback toggle
         dlg._toggle_play_snippet()
         self.assertTrue(dlg.is_playing)
-        self.assertEqual(dlg.play_snippet_btn.text(), "⏹ Parar")
+        self.assertEqual(dlg.play_snippet_btn.text(), "⏹ Stop")
 
         dlg._stop_playback()
         self.assertFalse(dlg.is_playing)
-        self.assertEqual(dlg.play_snippet_btn.text(), "▶ Escutar Trecho")
+        self.assertEqual(dlg.play_snippet_btn.text(), "▶ Play Snippet")
 
         # Test confirm
         dlg._on_confirm()

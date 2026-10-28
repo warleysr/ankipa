@@ -33,7 +33,7 @@ In the settings besides the API configs you will find some other options:
 - **Phoneme system:** only for en-US/GB, it defines how the syllables will be shown
 - **Shortcut:** your preferred shortcut to start recording your voice
 - **Enable sound effect:** sounds based on pronunciation score
-- **Cortar áudio antes de enviar (Trim audio before sending):** When enabled, displays a visual audio waveform dialog after recording so you can preview, listen to the selected snippet, remove silence with auto-trim, and send only the desired audio segment to Azure
+- **Trim audio before sending:** When enabled, displays a visual audio waveform dialog after recording so you can preview, listen to the selected snippet, remove silence with auto-trim, and send only the desired audio segment to Azure
 - **Text extraction method:** Choose how AnkiPA extracts text from your cards:
   - **Auto (DOM first, then fields):** Tries to extract visible text from the card DOM first, falls back to field extraction
   - **DOM only:** Only uses DOM extraction (useful for cards with dynamic/rotating content)
