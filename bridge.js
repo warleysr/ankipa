@@ -98,6 +98,24 @@
         }
     };
 
+    // Trigger AnkiPA assessment from JavaScript
+    window.ankipaStart = function() {
+        if (typeof pycmd === 'function') {
+            pycmd('ankipa:start');
+        } else if (typeof bridgeCommand === 'function') {
+            bridgeCommand('ankipa:start');
+        }
+    };
+
+    // Auto-bind click events on any button designated for AnkiPA in card templates
+    document.addEventListener('click', function(event) {
+        const btn = event.target.closest("[data-ankipa='start'], [data-ankipa], .ankipa-start, .ankipa-btn, #ankipa-start");
+        if (btn) {
+            event.preventDefault();
+            window.ankipaStart();
+        }
+    });
+
     const style = document.createElement('style');
     style.textContent = `
         .ankipa-highlight-border {

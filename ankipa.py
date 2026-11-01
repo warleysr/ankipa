@@ -124,8 +124,9 @@ class AnkiPA:
         elapsed = cls.DIAG._recorder.duration() - 0.5
         elapsed = round(elapsed, 2)
 
-        # Visual audio trimming if enabled
-        if app_settings.value("trim-audio", "False") == "True":
+        # Audio trimming (interactive visual dialog or automatic silence removal)
+        trim_mode = app_settings.value("trim-audio", defaultValue="disabled")
+        if trim_mode in ("visual", "manual", "True"):
             from .trimmer import AudioTrimDialog
             trim_dialog = AudioTrimDialog(recorded_voice, mw, reference_text=cls.REFTEXT)
             if trim_dialog.exec():
@@ -134,6 +135,12 @@ class AnkiPA:
             else:
                 mw.reviewer.web.eval("window.ankipaRemoveHighlight ? window.ankipaRemoveHighlight() : null")
                 return
+        elif trim_mode in ("auto", "auto-trim"):
+            from .trimmer import auto_trim_wav_file
+            trimmed_file, trimmed_duration = auto_trim_wav_file(recorded_voice)
+            if trimmed_file:
+                recorded_voice = trimmed_file
+                elapsed = trimmed_duration
 
         cls.RECORDED = recorded_voice
 

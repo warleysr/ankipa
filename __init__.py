@@ -407,11 +407,24 @@ class SettingsDialog(QDialog):
             True if app_settings.value("sound-effects", "False") == "True" else False
         )
 
-        # Trim audio before sending
-        self.trim_audio_check = QCheckBox("Trim audio before sending")
-        self.trim_audio_check.setChecked(
-            True if app_settings.value("trim-audio", "False") == "True" else False
-        )
+        # Audio trimming preference
+        self.trim_label = QLabel("Audio trimming method:")
+        self.trim_combo = QComboBox()
+        self.trim_combo.addItems([
+            "Disabled",
+            "Visual dialog (interactive trim)",
+            "Auto-trim silence (direct upload)"
+        ])
+
+        trim_methods = ["disabled", "visual", "auto"]
+        curr_trim = app_settings.value("trim-audio", defaultValue="disabled")
+        if curr_trim == "True":
+            curr_trim = "visual"
+        elif curr_trim == "False":
+            curr_trim = "disabled"
+
+        if curr_trim in trim_methods:
+            self.trim_combo.setCurrentIndex(trim_methods.index(curr_trim))
 
         # Text extraction preference
         self.extraction_label = QLabel("Text extraction method:")
@@ -447,7 +460,8 @@ class SettingsDialog(QDialog):
         self.base_layout.addWidget(self.shortcut_label)
         self.base_layout.addLayout(self.shortcut_box)
         self.base_layout.addWidget(self.sound_effects_check)
-        self.base_layout.addWidget(self.trim_audio_check)
+        self.base_layout.addWidget(self.trim_label)
+        self.base_layout.addWidget(self.trim_combo)
         self.base_layout.addWidget(self.extraction_label)
         self.base_layout.addWidget(self.extraction_combo)
         self.base_layout.addWidget(self.selectors_label)
@@ -472,8 +486,9 @@ class SettingsDialog(QDialog):
             "sound-effects", str(self.sound_effects_check.isChecked())
         )
 
+        trim_methods = ["disabled", "visual", "auto"]
         app_settings.setValue(
-            "trim-audio", str(self.trim_audio_check.isChecked())
+            "trim-audio", trim_methods[self.trim_combo.currentIndex()]
         )
 
         extraction_methods = ["auto", "dom", "fields"]
@@ -510,6 +525,17 @@ mw.addonManager.setWebExports(__name__, r"(chart/.*(css|js)|bridge\.js)")
 gui_hooks.webview_will_set_content.append(on_webview_will_set_content)
 
 gui_hooks.av_player_did_end_playing.append(lambda _: set_audio_speed(1.0))
+
+def on_webview_did_receive_js_message(handled, message, context):
+    if isinstance(message, str) and (
+        message in ("ankipa:start", "ankipa_start", "ankipa:record", "ankipa:assess", "ankipa")
+        or message.startswith("ankipa:start")
+    ):
+        start_assessment()
+        return (True, None)
+    return handled
+
+gui_hooks.webview_did_receive_js_message.append(on_webview_did_receive_js_message)
 
 ankipa_action = QAction("AnkiPA...", mw)
 ankipa_action.triggered.connect(main_dialog)

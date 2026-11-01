@@ -9,6 +9,21 @@ When you are reviewing a flashcard and press `Ctrl + W` AnkiPA starts to record 
 
 For Mac the command will be `Cmd + W`. It can be changed in the settings.
 
+### Trigger from Card Template (Embedded Button)
+
+You can also trigger AnkiPA directly by embedding a button in your card template (Front or Back):
+
+```html
+<!-- Option 1: Automatic click binding using class or data attribute -->
+<button type="button" class="ankipa-start">🎙️ Pronounce</button>
+
+<!-- Option 2: Using the JavaScript bridge function -->
+<button type="button" onclick="ankipaStart()">🎙️ Pronounce</button>
+
+<!-- Option 3: Using Anki's pycmd bridge -->
+<button type="button" onclick="pycmd('ankipa:start')">🎙️ Pronounce</button>
+```
+
 ## Installation
 
 Open Anki and go to **Tools** -> **Add-ons** -> **Get Add-ons...** -> Place the code below and then click OK.
@@ -33,7 +48,10 @@ In the settings besides the API configs you will find some other options:
 - **Phoneme system:** only for en-US/GB, it defines how the syllables will be shown
 - **Shortcut:** your preferred shortcut to start recording your voice
 - **Enable sound effect:** sounds based on pronunciation score
-- **Trim audio before sending:** When enabled, displays a visual audio waveform dialog after recording so you can preview, listen to the selected snippet, remove silence with auto-trim, and send only the desired audio segment to Azure
+- **Audio trimming method:** Choose how your recorded audio is trimmed before uploading to Azure:
+  - **Disabled:** Sends the full recorded audio directly to Azure (default behavior)
+  - **Visual dialog (interactive trim):** Displays a visual audio waveform dialog after recording so you can preview, listen to the selected snippet, remove silence with auto-trim, and send only the desired audio segment to Azure
+  - **Auto-trim silence (direct upload):** Automatically strips leading and trailing silence and uploads directly to Azure without showing the dialog, saving costs and review time
 - **Text extraction method:** Choose how AnkiPA extracts text from your cards:
   - **Auto (DOM first, then fields):** Tries to extract visible text from the card DOM first, falls back to field extraction
   - **DOM only:** Only uses DOM extraction (useful for cards with dynamic/rotating content)

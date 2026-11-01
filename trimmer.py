@@ -183,6 +183,27 @@ def trim_wav_file(source_path: str, target_path: str, start_time: float, end_tim
     return round(actual_duration, 2)
 
 
+def auto_trim_wav_file(source_path: str, margin: float = 0.15) -> tuple[str, float]:
+    """
+    Automatically detects speech boundaries, trims silence at start and end,
+    and returns (trimmed_file_path, trimmed_duration).
+    If no trimming was needed or speech could not be detected, returns (source_path, original_duration).
+    """
+    duration, _, amps = read_wav_peaks(source_path)
+    if duration <= 0.2 or not amps:
+        return source_path, duration
+
+    start_t, end_t = detect_silence_bounds(amps, duration, margin=margin)
+    if start_t <= 0.05 and end_t >= (duration - 0.05):
+        # Trimming would remove negligible silence
+        return source_path, duration
+
+    temp_dir = get_temp_ankipa_dir()
+    trimmed_path = os.path.join(temp_dir, f"autotrim_{int(time.time() * 1000)}.wav")
+    trimmed_duration = trim_wav_file(source_path, trimmed_path, start_t, end_t)
+    return trimmed_path, trimmed_duration
+
+
 class AudioWaveformWidget(QWidget):
     rangeChanged = pyqtSignal(float, float)
 

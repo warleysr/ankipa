@@ -1,29 +1,61 @@
 import os
+import sys
+
+# Ensure parent directory is in sys.path and remove script directory to avoid shadowing package
+script_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(script_dir)
+sys.path = [p for p in sys.path if os.path.abspath(p) != os.path.abspath(script_dir)]
+if parent_dir not in sys.path:
+    sys.path.insert(0, parent_dir)
+
 import wave
 import struct
 import tempfile
 import unittest
-
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtGui import QImage, QPainter, QMouseEvent
-from PyQt6.QtCore import Qt, QPointF, QEvent
+from unittest.mock import MagicMock, patch
 
 # Set offscreen Qt
 os.environ["QT_QPA_PLATFORM"] = "offscreen"
 
-from trimmer import (
+# Import aqt first before creating QApplication
+import aqt
+from PyQt6.QtWidgets import QApplication, QWidget
+from PyQt6.QtGui import QImage, QPainter, QMouseEvent
+from PyQt6.QtCore import Qt, QPointF, QEvent
+
+app = QApplication.instance() or QApplication([])
+
+class MockMW(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.form = MagicMock()
+        self.addonManager = MagicMock()
+        self.reviewer = MagicMock()
+        self.garbage_collect_on_dialog_finish = MagicMock()
+
+if not hasattr(aqt, "mw") or aqt.mw is None or not isinstance(aqt.mw, QWidget):
+    aqt.mw = MockMW()
+if not hasattr(aqt, "utils") or aqt.utils is None:
+    aqt.utils = MagicMock()
+if not hasattr(aqt.utils, "showInfo"):
+    aqt.utils.showInfo = MagicMock()
+
+from ankipa.trimmer import (
     read_wav_peaks,
     detect_silence_bounds,
     trim_wav_file,
+    auto_trim_wav_file,
     AudioWaveformWidget,
     AudioTrimDialog,
 )
+import ankipa as ankipa_pkg
+from ankipa.ankipa import AnkiPA
 
 
 class TestAudioTrimmer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.app = QApplication.instance() or QApplication([])
+        cls.app = app
 
         # Create sample WAV files
         cls.test_dir = tempfile.mkdtemp(prefix="ankipa_test_")
@@ -175,6 +207,79 @@ class TestAudioTrimmer(unittest.TestCase):
 
         with wave.open(trimmed_file, "rb") as wf:
             self.assertEqual(wf.getnframes(), int(1.4 * 16000))
+
+    def test_auto_trim_wav_file(self):
+        # speech_wav is 3.0s total: silence 0.6s, speech 1.5s, silence 0.9s
+        trimmed_file, trimmed_dur = auto_trim_wav_file(self.speech_wav)
+        self.assertTrue(os.path.exists(trimmed_file))
+        # Expected around 1.8s (speech + 0.15s margin on each side)
+        self.assertGreaterEqual(trimmed_dur, 1.5)
+        self.assertLessEqual(trimmed_dur, 2.0)
+
+        # silence_wav should not be trimmed (returns original path)
+        sil_file, sil_dur = auto_trim_wav_file(self.silence_wav)
+        self.assertEqual(sil_file, self.silence_wav)
+        self.assertEqual(sil_dur, 2.0)
+
+    def test_settings_dialog_trim_combo(self):
+        ankipa_pkg.app_settings.setValue("trim-audio", "disabled")
+
+        dialog = ankipa_pkg.SettingsDialog(aqt.mw)
+        self.assertEqual(dialog.trim_combo.currentText(), "Disabled")
+
+        # Select Auto-trim
+        dialog.trim_combo.setCurrentIndex(2)
+        dialog.accept()
+        self.assertEqual(ankipa_pkg.app_settings.value("trim-audio"), "auto")
+
+        # Select Visual dialog
+        dialog.trim_combo.setCurrentIndex(1)
+        dialog.accept()
+        self.assertEqual(ankipa_pkg.app_settings.value("trim-audio"), "visual")
+
+        # Clean up
+        ankipa_pkg.app_settings.setValue("trim-audio", "disabled")
+
+    def test_js_message_hook(self):
+        with patch.object(ankipa_pkg, "start_assessment") as mock_start:
+            handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "ankipa:start", None)
+            self.assertTrue(handled)
+            mock_start.assert_called_once()
+
+            mock_start.reset_mock()
+            handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "ankipa_start", None)
+            self.assertTrue(handled)
+            mock_start.assert_called_once()
+
+            # Other unrelated message should not be handled
+            mock_start.reset_mock()
+            handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "unrelated:msg", None)
+            self.assertFalse(handled)
+            mock_start.assert_not_called()
+
+    def test_auto_trim_in_after_record(self):
+        ankipa_pkg.app_settings.setValue("trim-audio", "auto")
+        ankipa_pkg.app_settings.setValue("region", "eastus")
+        ankipa_pkg.app_settings.setValue("language", "English (United States)")
+        ankipa_pkg.app_settings.setValue("key", "test-key")
+
+        with patch("ankipa.trimmer.AudioTrimDialog") as mock_dialog:
+            with patch("ankipa.pronunciation.pron_assess") as mock_assess:
+                with patch("ankipa.showInfo"):
+                    AnkiPA.DIAG = MagicMock()
+                    AnkiPA.DIAG._recorder.duration.return_value = 3.0
+                    AnkiPA.after_record(self.speech_wav)
+
+                    # Visual dialog should NOT be shown in auto mode
+                    mock_dialog.assert_not_called()
+                    # Audio should have been trimmed before sending to Azure
+                    self.assertNotEqual(AnkiPA.RECORDED, self.speech_wav)
+                    self.assertTrue(os.path.exists(AnkiPA.RECORDED))
+                    # pron_assess should have been called with the trimmed file
+                    mock_assess.assert_called_once()
+
+        # Clean up
+        ankipa_pkg.app_settings.setValue("trim-audio", "disabled")
 
 
 if __name__ == "__main__":
