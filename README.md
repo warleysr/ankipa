@@ -11,7 +11,7 @@ For Mac the command will be `Cmd + W`. It can be changed in the settings.
 
 ### Trigger from Card Template (Embedded Button)
 
-You can also trigger AnkiPA directly by embedding a button in your card template (Front or Back):
+You can trigger AnkiPA directly by embedding a button in your card template (Front or Back):
 
 ```html
 <!-- Option 1: Automatic click binding using class or data attribute -->
@@ -22,6 +22,30 @@ You can also trigger AnkiPA directly by embedding a button in your card template
 
 <!-- Option 3: Using Anki's pycmd bridge -->
 <button type="button" onclick="pycmd('ankipa:start')">🎙️ Pronounce</button>
+```
+
+#### Multiple Entries / Passing Custom Text or Selectors
+
+If your card contains multiple entries (e.g., a Word and an example Sentence), you can pass the specific field or selector to evaluate:
+
+```html
+<!-- 1. Pass field content directly via JavaScript -->
+<div class="word-section">
+  <span>{{Word}}</span>
+  <button type="button" onclick="ankipaStart('{{Word}}')">🎙️ Word</button>
+</div>
+
+<div class="sentence-section">
+  <p>{{Sentence}}</p>
+  <button type="button" onclick="ankipaStart('{{Sentence}}')">🎙️ Sentence</button>
+</div>
+
+<!-- 2. Pass field content using data-ankipa-text without writing JS -->
+<button type="button" class="ankipa-start" data-ankipa-text="{{Word}}">🎙️ Word</button>
+<button type="button" class="ankipa-start" data-ankipa-text="{{Sentence}}">🎙️ Sentence</button>
+
+<!-- 3. Pass a CSS selector of the target element -->
+<button type="button" onclick="ankipaStart('.sentence-section p')">🎙️ Sentence</button>
 ```
 
 ## Installation

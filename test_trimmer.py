@@ -37,8 +37,7 @@ if not hasattr(aqt, "mw") or aqt.mw is None or not isinstance(aqt.mw, QWidget):
     aqt.mw = MockMW()
 if not hasattr(aqt, "utils") or aqt.utils is None:
     aqt.utils = MagicMock()
-if not hasattr(aqt.utils, "showInfo"):
-    aqt.utils.showInfo = MagicMock()
+aqt.utils.showInfo = MagicMock()
 
 from ankipa.trimmer import (
     read_wav_peaks,
@@ -244,18 +243,30 @@ class TestAudioTrimmer(unittest.TestCase):
         with patch.object(ankipa_pkg, "start_assessment") as mock_start:
             handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "ankipa:start", None)
             self.assertTrue(handled)
-            mock_start.assert_called_once()
+            mock_start.assert_called_once_with()
 
             mock_start.reset_mock()
             handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "ankipa_start", None)
             self.assertTrue(handled)
-            mock_start.assert_called_once()
+            mock_start.assert_called_once_with()
+
+            # Test custom text passed via message
+            mock_start.reset_mock()
+            handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "ankipa:start:Bonjour%20le%20monde", None)
+            self.assertTrue(handled)
+            mock_start.assert_called_once_with(custom_text="Bonjour le monde")
 
             # Other unrelated message should not be handled
             mock_start.reset_mock()
             handled, res = ankipa_pkg.on_webview_did_receive_js_message((False, None), "unrelated:msg", None)
             self.assertFalse(handled)
             mock_start.assert_not_called()
+
+    def test_test_pronunciation_with_custom_text(self):
+        with patch("ankipa.ankipa.RecordDialog") as mock_record_diag:
+            AnkiPA.test_pronunciation(custom_text="<b>Bonjour</b> &nbsp; [sound:audio.mp3] monde")
+            self.assertEqual(AnkiPA.REFTEXT, "Bonjour monde")
+            mock_record_diag.assert_called_once()
 
     def test_auto_trim_in_after_record(self):
         ankipa_pkg.app_settings.setValue("trim-audio", "auto")

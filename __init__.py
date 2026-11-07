@@ -508,9 +508,9 @@ def main_dialog():
     AnkiPADialog(mw).show()
 
 
-def start_assessment():
+def start_assessment(custom_text: str = None):
     if mw.reviewer.card:
-        AnkiPA.test_pronunciation()
+        AnkiPA.test_pronunciation(custom_text=custom_text)
     else:
         main_dialog()
 
@@ -527,12 +527,19 @@ gui_hooks.webview_will_set_content.append(on_webview_will_set_content)
 gui_hooks.av_player_did_end_playing.append(lambda _: set_audio_speed(1.0))
 
 def on_webview_did_receive_js_message(handled, message, context):
-    if isinstance(message, str) and (
-        message in ("ankipa:start", "ankipa_start", "ankipa:record", "ankipa:assess", "ankipa")
-        or message.startswith("ankipa:start")
-    ):
-        start_assessment()
-        return (True, None)
+    if isinstance(message, str):
+        if message.startswith("ankipa:start:"):
+            import urllib.parse
+            raw_text = message[len("ankipa:start:"):]
+            custom_text = urllib.parse.unquote(raw_text)
+            start_assessment(custom_text=custom_text)
+            return (True, None)
+        elif (
+            message in ("ankipa:start", "ankipa_start", "ankipa:record", "ankipa:assess", "ankipa")
+            or message.startswith("ankipa:start")
+        ):
+            start_assessment()
+            return (True, None)
     return handled
 
 gui_hooks.webview_did_receive_js_message.append(on_webview_did_receive_js_message)

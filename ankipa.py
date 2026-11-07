@@ -32,60 +32,67 @@ class AnkiPA:
     DIAG = None
 
     @classmethod
-    def test_pronunciation(cls):
+    def test_pronunciation(cls, custom_text: str = None):
         from . import app_settings
 
         to_read = None
         dom_text_extracted = False
-        extraction_method = app_settings.value("extraction-method", defaultValue="auto")
 
-        if extraction_method in ["auto", "dom"]:
-            try:
-                default_selectors = "#sentences-inner .fr, .sentence.fr, .fr.sentence, [data-sentence], .example-sentence"
-                selectors = app_settings.value("dom-selectors", defaultValue=default_selectors)
-
-                mw.reviewer.web.eval(f"window.ankipaSetSelectors ? window.ankipaSetSelectors({json.dumps(selectors)}) : null")
-
-                def on_js_result(result):
-                    nonlocal to_read, dom_text_extracted
-                    if result and isinstance(result, str) and result.strip():
-                        to_read = result.strip()
-                        dom_text_extracted = True
-
-                mw.reviewer.web.evalWithCallback(
-                    "window.ankipaGetVisibleText ? window.ankipaGetVisibleText() : null",
-                    on_js_result
-                )
-
-                import time
-                max_wait = 0.2
-                start = time.time()
-                while not dom_text_extracted and (time.time() - start) < max_wait:
-                    mw.app.processEvents()
-                    time.sleep(0.01)
-
-                if dom_text_extracted:
-                    mw.reviewer.web.eval("window.ankipaHighlightText ? window.ankipaHighlightText() : null")
-            except:
-                pass
-
-        if not to_read and extraction_method != "dom":
-            field_names = mw.col.models.fieldNames(mw.reviewer.card.note().model())
-            fields: str = app_settings.value("fields")
-            field_to_use = field_names[0]
-
-            if fields is not None:
-                fields = fields.replace(" ", "").split(",")
-                for field in fields:
-                    if field in field_names:
-                        field_to_use = field
-                        break
-
-            to_read = mw.reviewer.card.note()[field_to_use]
-
+        if custom_text and isinstance(custom_text, str) and custom_text.strip():
+            to_read = custom_text.strip()
             to_read = re.sub(REMOVE_HTML_RE, " ", to_read).replace("&nbsp;", "")
+            to_read = re.sub(REMOVE_TAG_RE, "", to_read)
+            to_read = re.sub(r"\s+", " ", to_read).strip()
+        else:
+            extraction_method = app_settings.value("extraction-method", defaultValue="auto")
 
-            to_read = re.sub(REMOVE_TAG_RE, "", to_read).strip()
+            if extraction_method in ["auto", "dom"]:
+                try:
+                    default_selectors = "#sentences-inner .fr, .sentence.fr, .fr.sentence, [data-sentence], .example-sentence"
+                    selectors = app_settings.value("dom-selectors", defaultValue=default_selectors)
+
+                    mw.reviewer.web.eval(f"window.ankipaSetSelectors ? window.ankipaSetSelectors({json.dumps(selectors)}) : null")
+
+                    def on_js_result(result):
+                        nonlocal to_read, dom_text_extracted
+                        if result and isinstance(result, str) and result.strip():
+                            to_read = result.strip()
+                            dom_text_extracted = True
+
+                    mw.reviewer.web.evalWithCallback(
+                        "window.ankipaGetVisibleText ? window.ankipaGetVisibleText() : null",
+                        on_js_result
+                    )
+
+                    import time
+                    max_wait = 0.2
+                    start = time.time()
+                    while not dom_text_extracted and (time.time() - start) < max_wait:
+                        mw.app.processEvents()
+                        time.sleep(0.01)
+
+                    if dom_text_extracted:
+                        mw.reviewer.web.eval("window.ankipaHighlightText ? window.ankipaHighlightText() : null")
+                except:
+                    pass
+
+            if not to_read and extraction_method != "dom":
+                field_names = mw.col.models.fieldNames(mw.reviewer.card.note().model())
+                fields: str = app_settings.value("fields")
+                field_to_use = field_names[0]
+
+                if fields is not None:
+                    fields = fields.replace(" ", "").split(",")
+                    for field in fields:
+                        if field in field_names:
+                            field_to_use = field
+                            break
+
+                to_read = mw.reviewer.card.note()[field_to_use]
+
+                to_read = re.sub(REMOVE_HTML_RE, " ", to_read).replace("&nbsp;", "")
+
+                to_read = re.sub(REMOVE_TAG_RE, "", to_read).strip()
 
         cls.REFTEXT = to_read
 

@@ -98,12 +98,42 @@
         }
     };
 
-    // Trigger AnkiPA assessment from JavaScript
-    window.ankipaStart = function() {
+    // Trigger AnkiPA assessment from JavaScript (optionally with specific text or selector)
+    window.ankipaStart = function(target) {
+        let text = null;
+        if (typeof target === 'string' && target.trim()) {
+            // Check if target is a CSS selector pointing to an existing DOM element
+            try {
+                const el = document.querySelector(target);
+                if (el) {
+                    text = extractText(el);
+                    if (text) {
+                        cachedElement = el;
+                        window.ankipaHighlightText();
+                    }
+                }
+            } catch (e) {
+                // Not a valid selector, treat as literal text
+            }
+            if (!text) {
+                text = target.trim();
+            }
+        } else if (target instanceof HTMLElement) {
+            text = extractText(target);
+            if (text) {
+                cachedElement = target;
+                window.ankipaHighlightText();
+            }
+        }
+
+        const payload = (text !== null && text !== undefined && text !== '')
+            ? 'ankipa:start:' + encodeURIComponent(text)
+            : 'ankipa:start';
+
         if (typeof pycmd === 'function') {
-            pycmd('ankipa:start');
+            pycmd(payload);
         } else if (typeof bridgeCommand === 'function') {
-            bridgeCommand('ankipa:start');
+            bridgeCommand(payload);
         }
     };
 
@@ -112,7 +142,9 @@
         const btn = event.target.closest("[data-ankipa='start'], [data-ankipa], .ankipa-start, .ankipa-btn, #ankipa-start");
         if (btn) {
             event.preventDefault();
-            window.ankipaStart();
+            const customText = btn.getAttribute('data-ankipa-text') || btn.getAttribute('data-text');
+            const customTarget = btn.getAttribute('data-ankipa-target') || btn.getAttribute('data-target');
+            window.ankipaStart(customText || customTarget);
         }
     });
 
